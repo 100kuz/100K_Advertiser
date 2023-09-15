@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.items
 import uz.yuzka.a100kadmin.R
 import uz.yuzka.a100kadmin.data.response.PromoCodeItem
 import uz.yuzka.a100kadmin.ui.theme.BackButton
@@ -120,10 +121,10 @@ fun AllPromoCodeScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(top = 10.dp, bottom = 70.dp)
             ) {
-                items(promoCodes.itemCount, key = {
-                    promoCodes[it]?.id ?: Any()
+                items(promoCodes, key = {
+                    it.id
                 }) {
-                    promoCodes[it]?.let { prm -> ItemPromoCode(prm, onPromoCodeClick) }
+                    it?.let { prm -> ItemPromoCode(prm, onPromoCodeClick) }
                 }
             }
 

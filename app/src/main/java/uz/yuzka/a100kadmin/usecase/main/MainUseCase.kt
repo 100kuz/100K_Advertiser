@@ -4,6 +4,7 @@ import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
 import uz.yuzka.a100kadmin.data.response.BalanceResponse
 import uz.yuzka.a100kadmin.data.response.CategoryDto
+import uz.yuzka.a100kadmin.data.response.CharityItem
 import uz.yuzka.a100kadmin.data.response.GetMeDto
 import uz.yuzka.a100kadmin.data.response.GetMoneyResponse
 import uz.yuzka.a100kadmin.data.response.MessageResponse
@@ -14,6 +15,7 @@ import uz.yuzka.a100kadmin.data.response.ProductItemDto
 import uz.yuzka.a100kadmin.data.response.PromoCodeData
 import uz.yuzka.a100kadmin.data.response.PromoCodeItem
 import uz.yuzka.a100kadmin.data.response.StatisticsDto
+import uz.yuzka.a100kadmin.data.response.TransactionItem
 import uz.yuzka.a100kadmin.data.response.WithdrawsDto
 import uz.yuzka.seller.data.request.GetMoneyRequest
 import uz.yuzka.seller.data.request.LogoutRequest
@@ -62,6 +64,10 @@ interface MainUseCase {
 
     fun getPromoCodes(): Flow<PagingData<PromoCodeItem>>
 
+    fun getTransactions(): Flow<PagingData<TransactionItem>>
+
     fun createPromoCode(name: String): Flow<Result<PromoCodeData>>
+
+    fun getCharities(): Flow<PagingData<CharityItem>>
 
 }

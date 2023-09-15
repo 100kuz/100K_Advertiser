@@ -2,20 +2,20 @@ package uz.yuzka.a100kadmin.datasource
 
 import androidx.paging.PagingSource
 import uz.yuzka.a100kadmin.base.BasePagingDataSource
-import uz.yuzka.a100kadmin.data.response.WithdrawsDto
+import uz.yuzka.a100kadmin.data.response.TransactionItem
 import uz.yuzka.a100kadmin.network.MainApi
 import javax.inject.Inject
 
-class WithdrawsDataSource @Inject constructor(
+class TransactionsDataSource @Inject constructor(
     private val api: MainApi
-) : BasePagingDataSource<WithdrawsDto>() {
+) : BasePagingDataSource<TransactionItem>() {
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, WithdrawsDto> {
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, TransactionItem> {
 
         val page: Int = params.key ?: 1
         return try {
             handle {
-                api.getWithdraws(
+                api.getTransactions(
                     page = page
                 )
 
@@ -25,9 +25,8 @@ class WithdrawsDataSource @Inject constructor(
         }
     }
 
-    fun create(): PagingSource<Int, WithdrawsDto> {
-
-        return WithdrawsDataSource(api)
+    fun create(): PagingSource<Int, TransactionItem> {
+        return TransactionsDataSource(api)
     }
 
 }

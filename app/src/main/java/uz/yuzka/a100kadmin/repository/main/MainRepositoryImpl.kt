@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.flowOn
 import uz.yuzka.a100kadmin.base.BaseErrorResponse
 import uz.yuzka.a100kadmin.data.response.BalanceResponse
 import uz.yuzka.a100kadmin.data.response.CategoryDto
+import uz.yuzka.a100kadmin.data.response.CharityItem
 import uz.yuzka.a100kadmin.data.response.CreatePromoCodeRequest
 import uz.yuzka.a100kadmin.data.response.GetMeDto
 import uz.yuzka.a100kadmin.data.response.GetMoneyResponse
@@ -24,12 +25,15 @@ import uz.yuzka.a100kadmin.data.response.ProductItemDto
 import uz.yuzka.a100kadmin.data.response.PromoCodeData
 import uz.yuzka.a100kadmin.data.response.PromoCodeItem
 import uz.yuzka.a100kadmin.data.response.StatisticsDto
+import uz.yuzka.a100kadmin.data.response.TransactionItem
 import uz.yuzka.a100kadmin.data.response.WithdrawsDto
 import uz.yuzka.a100kadmin.datasource.AllSalesDataSource
 import uz.yuzka.a100kadmin.datasource.CategoriesDataSource
+import uz.yuzka.a100kadmin.datasource.CharitiesDataSource
 import uz.yuzka.a100kadmin.datasource.NotificationsDataSource
 import uz.yuzka.a100kadmin.datasource.PromoCodesDataSource
 import uz.yuzka.a100kadmin.datasource.StoreProductsDataSource
+import uz.yuzka.a100kadmin.datasource.TransactionsDataSource
 import uz.yuzka.a100kadmin.datasource.WithdrawsDataSource
 import uz.yuzka.a100kadmin.network.MainApi
 import uz.yuzka.a100kadmin.pref.MyPref
@@ -171,7 +175,7 @@ class MainRepositoryImpl @Inject constructor(
                     pageSize = 4
                 ),
                 pagingSourceFactory = {
-                    WithdrawsDataSource(api).create(id)
+                    WithdrawsDataSource(api).create()
                 }, initialKey = 1
             ).flow
         } catch (_: Exception) {
@@ -314,5 +318,42 @@ class MainRepositoryImpl @Inject constructor(
         val errorMessage = Throwable(it.message)
         emit(Result.failure(errorMessage))
     }.flowOn(Dispatchers.IO)
+
+
+    override fun getTransactions(): Flow<PagingData<TransactionItem>> {
+        return try {
+            Pager(
+                config = PagingConfig(
+                    pageSize = 4
+                ),
+                pagingSourceFactory = {
+                    TransactionsDataSource(api).create()
+                }, initialKey = 1
+            ).flow
+        } catch (e: Exception) {
+            flow {
+                emit(PagingData.empty())
+            }
+        }
+    }
+
+
+    override fun getCharities(): Flow<PagingData<CharityItem>> {
+        return try {
+            Pager(
+                config = PagingConfig(
+                    pageSize = 4
+                ),
+                pagingSourceFactory = {
+                    CharitiesDataSource(api).create()
+                }, initialKey = 1
+            ).flow
+        } catch (e: Exception) {
+            flow {
+                emit(PagingData.empty())
+            }
+        }
+    }
+
 
 }

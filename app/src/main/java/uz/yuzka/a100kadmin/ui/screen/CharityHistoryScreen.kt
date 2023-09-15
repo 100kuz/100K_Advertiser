@@ -13,6 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -20,6 +24,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,12 +41,38 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.items
 import uz.yuzka.a100kadmin.R
+import uz.yuzka.a100kadmin.data.response.CharityItem
 import uz.yuzka.a100kadmin.ui.theme.BackButton
+import uz.yuzka.a100kadmin.ui.viewModel.home.HomeViewModel
+import uz.yuzka.a100kadmin.ui.viewModel.home.HomeViewModelImpl
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun CharityHistoryScreen(onBackPress: () -> Unit) {
+fun CharityHistoryScreen(
+    viewModel: HomeViewModel = hiltViewModel<HomeViewModelImpl>(),
+    onBackPress: () -> Unit
+) {
+
+    val charities = viewModel.charities.collectAsLazyPagingItems()
+
+    val hasLoaded by viewModel.hasLoadedCharities.observeAsState(false)
+
+    val progress by viewModel.progressFlow.collectAsState(initial = false)
+
+    LaunchedEffect(key1 = null) {
+        if (!hasLoaded) {
+            viewModel.getCharities()
+        }
+    }
+
+    val pullRefreshState =
+        rememberPullRefreshState(
+            refreshing = progress,
+            onRefresh = { charities.refresh() })
 
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(
@@ -68,6 +102,7 @@ fun CharityHistoryScreen(onBackPress: () -> Unit) {
             modifier = Modifier
                 .padding(pad)
                 .background(Color(0xFFF0F0F0))
+                .pullRefresh(pullRefreshState)
         ) {
 
             LazyColumn(
@@ -118,14 +153,26 @@ fun CharityHistoryScreen(onBackPress: () -> Unit) {
                             )
 
                         }
-
                     }
                 }
 
-                items(20) {
-                    ItemCharityHistory()
+                items(charities, key = {
+                    it.id
+                }) {
+                    it?.let { ch ->
+                        ItemCharityHistory(ch)
+                    }
                 }
+                
             }
+
+
+            PullRefreshIndicator(
+                refreshing = progress,
+                state = pullRefreshState,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+
 
         }
     }
@@ -133,7 +180,7 @@ fun CharityHistoryScreen(onBackPress: () -> Unit) {
 
 //@Preview
 @Composable
-fun ItemCharityHistory() {
+fun ItemCharityHistory(data: CharityItem) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -150,7 +197,7 @@ fun ItemCharityHistory() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "5000 so'm",
+                text = "${data.charity} so'm",
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
@@ -164,7 +211,7 @@ fun ItemCharityHistory() {
 
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(
-                    text = "12345 - oqim",
+                    text = "${data.product_id} - oqim",
                     style = TextStyle(
                         fontSize = 17.sp,
                         lineHeight = 20.sp,
@@ -175,7 +222,7 @@ fun ItemCharityHistory() {
                 )
 
                 Text(
-                    text = "Tashrif: 2,348 ta",
+                    text = "Tashrif: ${data.visits} ta",
                     style = TextStyle(
                         fontSize = 15.sp,
                         lineHeight = 18.sp,
@@ -185,11 +232,10 @@ fun ItemCharityHistory() {
                     )
                 )
             }
-
         }
 
         Text(
-            text = "ID:3493",
+            text = "ID: ${data.id}",
             style = TextStyle(
                 fontSize = 16.sp,
                 lineHeight = 19.sp,
@@ -202,10 +248,4 @@ fun ItemCharityHistory() {
         )
 
     }
-}
-
-@Composable
-inline fun CharityDescription() {
-
-
 }

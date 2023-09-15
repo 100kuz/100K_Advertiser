@@ -3,6 +3,7 @@ package uz.yuzka.a100kadmin.network
 import retrofit2.Response
 import retrofit2.http.*
 import uz.yuzka.a100kadmin.data.response.CategoriesResponse
+import uz.yuzka.a100kadmin.data.response.CharitiesResponse
 import uz.yuzka.a100kadmin.data.response.CreatePromoCodeRequest
 import uz.yuzka.a100kadmin.data.response.GetMeDto
 import uz.yuzka.a100kadmin.data.response.GetMoneyResponse
@@ -14,6 +15,7 @@ import uz.yuzka.a100kadmin.data.response.PromoCodeData
 import uz.yuzka.a100kadmin.data.response.PromoCodeResponse
 import uz.yuzka.a100kadmin.data.response.SalesResponse
 import uz.yuzka.a100kadmin.data.response.StatisticsResponse
+import uz.yuzka.a100kadmin.data.response.TransactionsResponse
 import uz.yuzka.a100kadmin.data.response.WithdrawsResponse
 import uz.yuzka.seller.data.request.GetMoneyRequest
 import uz.yuzka.seller.data.request.LogoutRequest
@@ -48,8 +50,7 @@ interface MainApi {
     ): ProductsResponse
 
     @GET("advertiser/{store_id}/withdraws")
-    suspend fun getStoreWithdraws(
-        @Path("store_id") id: Int,
+    suspend fun getWithdraws(
         @Query("page") page: Int
     ): WithdrawsResponse
 
@@ -91,5 +92,15 @@ interface MainApi {
     suspend fun createPromoCode(
         @Body name: CreatePromoCodeRequest
     ): Response<PromoCodeData>
+
+    @GET("advertiser/transactions")
+    suspend fun getTransactions(
+        @Query("page") page: Int = 1
+    ): TransactionsResponse
+
+    @GET("advertiser/streams/charity")
+    suspend fun getCharities(
+        @Query("page") page: Int = 1
+    ): CharitiesResponse
 
 }

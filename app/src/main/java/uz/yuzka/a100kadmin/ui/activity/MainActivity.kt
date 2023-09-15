@@ -266,14 +266,15 @@ class MainActivity : ComponentActivity() {
                         },
                         transactionsContent = { TransactionsScreen() },
                         streamsContent = {
-                            AllStreamsContent(onStreamClick = { id ->
-                                navigationState.navigateTo(
-                                    Screen.StreamDetailedContent.getRouteWithArgs(
-                                        id
-                                    ),
-                                    false
-                                )
-                            }
+                            AllStreamsContent(
+                                onStreamClick = { id ->
+                                    navigationState.navigateTo(
+                                        Screen.StreamDetailedContent.getRouteWithArgs(
+                                            id
+                                        ),
+                                        false
+                                    )
+                                }
                             )
                         },
                         marketContent = {
@@ -311,7 +312,8 @@ class MainActivity : ComponentActivity() {
                             )
                         },
                         salesContent = {
-                            AllSalesScreen(viewModel = homeViewModel,
+                            AllSalesScreen(
+                                viewModel = homeViewModel,
                                 onBackPress = {
                                     navigationState.navHostController.popBackStack()
                                 },
@@ -327,6 +329,7 @@ class MainActivity : ComponentActivity() {
                         },
                         balanceHistoryContent = {
                             BalanceHistoryScreen(
+                                viewModel = homeViewModel,
                                 onBackPress = {
                                     navigationState.navHostController.popBackStack()
                                 })

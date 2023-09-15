@@ -34,7 +34,6 @@ import uz.yuzka.a100kadmin.ui.theme.BackButton
 @Composable
 fun CharityInfoLayout() {
 
-
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(
             title = {

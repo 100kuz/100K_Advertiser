@@ -13,6 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -20,6 +24,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,13 +41,42 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.items
 import uz.yuzka.a100kadmin.R
+import uz.yuzka.a100kadmin.data.response.TransactionItem
 import uz.yuzka.a100kadmin.ui.screen.tools.BalanceChart
 import uz.yuzka.a100kadmin.ui.theme.BackButton
+import uz.yuzka.a100kadmin.ui.viewModel.home.HomeViewModel
+import uz.yuzka.a100kadmin.ui.viewModel.home.HomeViewModelImpl
+import uz.yuzka.a100kadmin.utils.formatToPrice
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun BalanceHistoryScreen(onBackPress: () -> Unit) {
+fun BalanceHistoryScreen(
+    viewModel: HomeViewModel = hiltViewModel<HomeViewModelImpl>(),
+    onBackPress: () -> Unit
+) {
+
+    val transactions = viewModel.transactions.collectAsLazyPagingItems()
+
+    val hasLoaded by viewModel.hasLoadedTransactions.observeAsState(false)
+
+    val progress by viewModel.progressFlow.collectAsState(initial = false)
+
+    LaunchedEffect(key1 = null) {
+        if (!hasLoaded) {
+            viewModel.getTransactions()
+        }
+    }
+
+    val pullRefreshState =
+        rememberPullRefreshState(
+            refreshing = progress,
+            onRefresh = { transactions.refresh() })
+
+
 
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(
@@ -64,10 +101,12 @@ fun BalanceHistoryScreen(onBackPress: () -> Unit) {
             ), modifier = Modifier.shadow(2.dp)
         )
     }) { pad ->
+
         Box(
             modifier = Modifier
                 .padding(pad)
                 .background(Color(0xFFF0F0F0))
+                .pullRefresh(pullRefreshState)
         ) {
 
             LazyColumn(
@@ -79,11 +118,20 @@ fun BalanceHistoryScreen(onBackPress: () -> Unit) {
                     BalanceChart(modifier = Modifier.fillMaxWidth())
                 }
 
-                items(20) {
-                    ItemBalanceHistory()
+                items(transactions, key = {
+                    it.id
+                }
+                ) {
+                    it?.let { dto -> ItemBalanceHistory(dto) }
                 }
 
             }
+
+            PullRefreshIndicator(
+                refreshing = progress,
+                state = pullRefreshState,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
 
         }
     }
@@ -91,7 +139,7 @@ fun BalanceHistoryScreen(onBackPress: () -> Unit) {
 
 //@Preview
 @Composable
-fun ItemBalanceHistory() {
+fun ItemBalanceHistory(data: TransactionItem) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -108,20 +156,31 @@ fun ItemBalanceHistory() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_arrow_left_down_line),
+                painter = painterResource(
+                    id = if (data.type == "plus") R.drawable.ic_arrow_left_down_line
+                    else R.drawable.ic_arrow_right_up_line
+                ),
                 contentDescription = null,
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .border(1.dp, Color(0xFF23B60B), CircleShape)
-                    .background(Color(0x3323B60B))
+                    .border(
+                        1.dp,
+                        if (data.type == "plus") Color(0xFF23B60B)
+                        else Color(0xFFF1A30C),
+                        CircleShape
+                    )
+                    .background(
+                        if (data.type == "plus") Color(0x3323B60B)
+                        else Color(0x33F1A30C)
+                    )
                     .padding(12.dp),
                 tint = Color.Unspecified
             )
 
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(
-                    text = "42,000 so‘m",
+                    text = "${data.amount.toString().formatToPrice()} so‘m",
                     style = TextStyle(
                         fontSize = 17.sp,
                         lineHeight = 20.sp,
@@ -132,7 +191,7 @@ fun ItemBalanceHistory() {
                 )
 
                 Text(
-                    text = "#212987-pochta yetqazib berildi.",
+                    text = data.comment,
                     style = TextStyle(
                         fontSize = 15.sp,
                         lineHeight = 18.sp,
@@ -146,7 +205,7 @@ fun ItemBalanceHistory() {
         }
 
         Text(
-            text = "2 daq oldin",
+            text = data.created_at_label,
             style = TextStyle(
                 fontSize = 11.sp,
                 lineHeight = 13.sp,

@@ -7,14 +7,14 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import uz.yuzka.a100kadmin.base.SaleStatus
-import uz.yuzka.a100kadmin.data.response.BalanceSto
+import uz.yuzka.a100kadmin.data.response.CharityItem
 import uz.yuzka.a100kadmin.data.response.OrderItem
 import uz.yuzka.a100kadmin.data.response.PromoCodeItem
+import uz.yuzka.a100kadmin.data.response.TransactionItem
 import uz.yuzka.a100kadmin.usecase.main.MainUseCase
 import uz.yuzka.a100kadmin.utils.eventValueFlow
 import javax.inject.Inject
@@ -27,11 +27,13 @@ class HomeViewModelImpl @Inject constructor(
     override val errorFlow = eventValueFlow<String?>()
     override val sales = eventValueFlow<PagingData<OrderItem>>()
     override val status = MutableLiveData<SaleStatus>(SaleStatus.ALL)
-    override val balanceHistory: Flow<BalanceSto>
-        get() = TODO("Not yet implemented")
+    override val transactions = eventValueFlow<PagingData<TransactionItem>>()
+    override val charities = eventValueFlow<PagingData<CharityItem>>()
     override val promoCodes = eventValueFlow<PagingData<PromoCodeItem>>()
 
     override val hasLoadedPromoCodes = MutableLiveData(false)
+    override val hasLoadedTransactions = MutableLiveData(false)
+    override val hasLoadedCharities = MutableLiveData(false)
     override val hasLoadedOrders = MutableLiveData(false)
 
     override fun selectOrderStatus(status: SaleStatus) {
@@ -57,6 +59,30 @@ class HomeViewModelImpl @Inject constructor(
             useCase.getPromoCodes().cachedIn(viewModelScope).onEach {
                 promoCodes.emit(it)
                 hasLoadedPromoCodes.value = true
+            }.cachedIn(viewModelScope).launchIn(viewModelScope)
+            delay(1000)
+            progressFlow.emit(false)
+        }
+    }
+
+    override fun getTransactions() {
+        viewModelScope.launch {
+            progressFlow.emit(true)
+            useCase.getTransactions().cachedIn(viewModelScope).onEach {
+                transactions.emit(it)
+                hasLoadedTransactions.value = true
+            }.cachedIn(viewModelScope).launchIn(viewModelScope)
+            delay(1000)
+            progressFlow.emit(false)
+        }
+    }
+
+    override fun getCharities() {
+        viewModelScope.launch {
+            progressFlow.emit(true)
+            useCase.getCharities().cachedIn(viewModelScope).onEach {
+                charities.emit(it)
+                hasLoadedCharities.value = true
             }.cachedIn(viewModelScope).launchIn(viewModelScope)
             delay(1000)
             progressFlow.emit(false)

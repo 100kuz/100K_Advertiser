@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.items
 import uz.yuzka.a100kadmin.R
 import uz.yuzka.a100kadmin.base.SaleStatus
 import uz.yuzka.a100kadmin.data.response.OrderItem
@@ -260,10 +261,10 @@ fun AllSalesScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(bottom = 70.dp)
             ) {
-                items(orders.itemCount, key = {
-                    orders[it]?.id ?: Any()
+                items(orders, key = {
+                    it.id
                 }) {
-                    orders[it]?.let { ord -> ItemSale(ord, onSaleClick) }
+                    it?.let { ord -> ItemSale(ord, onSaleClick) }
                 }
             }
 
