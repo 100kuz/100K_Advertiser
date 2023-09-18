@@ -50,6 +50,10 @@ import uz.yuzka.a100kadmin.ui.viewModel.createpromocode.CreatePromoCodeViewModel
 import uz.yuzka.a100kadmin.ui.viewModel.createpromocode.CreatePromoCodeViewModelImpl
 import uz.yuzka.a100kadmin.ui.viewModel.home.HomeViewModel
 import uz.yuzka.a100kadmin.ui.viewModel.home.HomeViewModelImpl
+import uz.yuzka.a100kadmin.ui.viewModel.main.MainViewModel
+import uz.yuzka.a100kadmin.ui.viewModel.main.MainViewModelImpl
+import uz.yuzka.a100kadmin.ui.viewModel.withdraws.WithdrawsViewModel
+import uz.yuzka.a100kadmin.ui.viewModel.withdraws.WithdrawsViewModelImpl
 
 @OptIn(ExperimentalMaterial3Api::class)
 @AndroidEntryPoint
@@ -64,6 +68,8 @@ class MainActivity : ComponentActivity() {
     )
 
     private val homeViewModel: HomeViewModel by viewModels<HomeViewModelImpl>()
+    private val withdrawsViewModel: WithdrawsViewModel by viewModels<WithdrawsViewModelImpl>()
+    private val mainViewModel: MainViewModel by viewModels<MainViewModelImpl>()
     private val createPromoCodeVM: CreatePromoCodeViewModel by viewModels<CreatePromoCodeViewModelImpl>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -264,9 +270,10 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         },
-                        transactionsContent = { TransactionsScreen() },
+                        transactionsContent = { TransactionsScreen(withdrawsViewModel) },
                         streamsContent = {
                             AllStreamsContent(
+                                mainViewModel = mainViewModel,
                                 onStreamClick = { id ->
                                     navigationState.navigateTo(
                                         Screen.StreamDetailedContent.getRouteWithArgs(
@@ -279,9 +286,11 @@ class MainActivity : ComponentActivity() {
                         },
                         marketContent = {
                             MarketScreen(
+                                viewModel = mainViewModel,
                                 onProductClick = {
+                                    mainViewModel.selectProduct(it)
                                     navigationState.navigateTo(
-                                        Screen.CreateStreamContent.route,
+                                        Screen.CreateStreamContent.getRouteWithArgs(it.id),
                                         false
                                     )
                                 }
@@ -344,12 +353,16 @@ class MainActivity : ComponentActivity() {
                         userScreenContent = {
                             UserScreen(onBackPress = {
                                 navigationState.navHostController.popBackStack()
-                            })
+                            }
+                            )
                         },
-                        streamItemContent = {
-                            StreamDetailedScreen(onBackPress = {
-                                navigationState.navHostController.popBackStack()
-                            })
+                        streamItemContent = { id ->
+                            StreamDetailedScreen(
+                                id,
+                                onBackPress = {
+                                    navigationState.navHostController.popBackStack()
+                                }
+                            )
                         },
                         createPromoCodeContent = {
                             CreatePromoCodeScreen(
@@ -359,10 +372,20 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         },
-                        createStreamContent = {
+                        createStreamContent = { id ->
                             CreateStreamScreen(
+                                id = id,
+                                viewModel = mainViewModel,
                                 onBackPress = {
                                     navigationState.navHostController.popBackStack()
+                                },
+                                onCreateSuccess = {
+                                    navigationState.popUpTo(Screen.MarketContent.route)
+                                    navigationState.navigateTo(
+                                        Screen.StreamDetailedContent.getRouteWithArgs(
+                                            it
+                                        ), false
+                                    )
                                 }
                             )
                         }

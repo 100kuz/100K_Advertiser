@@ -23,16 +23,14 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uz.yuzka.a100kadmin.R
 import uz.yuzka.a100kadmin.ui.theme.BackButton
 
-@Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CharityInfoLayout() {
+fun CharityInfoLayout(onBackPress: () -> Unit) {
 
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(
@@ -49,7 +47,7 @@ fun CharityInfoLayout() {
             },
             navigationIcon = {
                 BackButton {
-                    //todo
+                    onBackPress()
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(

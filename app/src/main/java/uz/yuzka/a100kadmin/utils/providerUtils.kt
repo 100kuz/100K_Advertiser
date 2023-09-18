@@ -198,6 +198,21 @@ class MaskVisualTransformation(private val mask: String) : VisualTransformation 
     }
 }
 
+class SuffixTransformation(val suffix: String) : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        return TransformedText(AnnotatedString("$text $suffix"), numberOffsetTranslator)
+    }
+
+    val numberOffsetTranslator = object : OffsetMapping {
+        override fun originalToTransformed(offset: Int): Int {
+            return offset
+        }
+
+        override fun transformedToOriginal(offset: Int): Int {
+            return offset
+        }
+    }
+}
 
 class CurrencyAmountInputVisualTransformation(
     private val fixedCursorAtTheEnd: Boolean = true,
@@ -234,7 +249,7 @@ class CurrencyAmountInputVisualTransformation(
 //        }
 
         val newText = AnnotatedString(
-            text = intPart,
+            text = "$intPart so'm",
             spanStyles = text.spanStyles,
             paragraphStyles = text.paragraphStyles
         )

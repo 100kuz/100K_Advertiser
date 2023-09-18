@@ -1,7 +1,11 @@
 package uz.yuzka.a100kadmin.ui.screen
 
+import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,24 +17,34 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,7 +53,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -49,13 +63,101 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.items
 import uz.yuzka.a100kadmin.R
+import uz.yuzka.a100kadmin.data.request.GetMoneyRequest
+import uz.yuzka.a100kadmin.data.response.WithdrawsDto
+import uz.yuzka.a100kadmin.ui.viewModel.withdraws.WithdrawsViewModel
+import uz.yuzka.a100kadmin.ui.viewModel.withdraws.WithdrawsViewModelImpl
+import uz.yuzka.a100kadmin.utils.CurrencyAmountInputVisualTransformation
 import uz.yuzka.a100kadmin.utils.MaskVisualTransformation
+import uz.yuzka.a100kadmin.utils.formatToPrice
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 @ExperimentalMaterial3Api
 fun TransactionsScreen(
+    viewModel: WithdrawsViewModel = hiltViewModel<WithdrawsViewModelImpl>()
 ) {
+    val context = LocalContext.current
+
+    val withdraws = viewModel.withdraws.collectAsLazyPagingItems()
+
+    val getMeDto by viewModel.getMeData.collectAsState(null)
+
+    val hasLoadedWithdraws by viewModel.hasLoadedWithdraws.observeAsState(false)
+
+    val hasLoadedUser by viewModel.hasLoadedUser.observeAsState(false)
+    val hasCanceled by viewModel.hasCanceled.collectAsState(false)
+    val hasCreatedWithdraw by viewModel.hasCreatedWithdraw.collectAsState(false)
+
+    val progress by viewModel.progressFlow.collectAsState(initial = false)
+    val error by viewModel.errorFlow.collectAsState(initial = null)
+
+    var cancelId by remember {
+        mutableIntStateOf(-1)
+    }
+
+    var showCancelDialog by remember {
+        mutableStateOf(false)
+    }
+
+
+    var sum by remember {
+        mutableStateOf("")
+    }
+
+    var cardNumber by remember {
+        mutableStateOf("")
+    }
+
+
+    LaunchedEffect(key1 = hasLoadedWithdraws) {
+        if (!hasLoadedWithdraws) {
+            viewModel.getWithdraws()
+        }
+    }
+
+    LaunchedEffect(key1 = hasCanceled) {
+        if (hasCanceled) {
+            withdraws.refresh()
+            viewModel.gotCancel()
+        }
+    }
+
+    LaunchedEffect(key1 = error) {
+        if (error != null) {
+            Toast.makeText(context, "$error", Toast.LENGTH_SHORT).show()
+            viewModel.gotError()
+        }
+    }
+
+    LaunchedEffect(key1 = hasCreatedWithdraw) {
+        if (hasCreatedWithdraw) {
+            cardNumber = ""
+            sum = ""
+            viewModel.gotCreateSuccess()
+            withdraws.refresh()
+        }
+    }
+
+    LaunchedEffect(key1 = hasLoadedUser) {
+        if (!hasLoadedUser) {
+            viewModel.getMe()
+        }
+    }
+
+    val pullRefreshState =
+        rememberPullRefreshState(
+            refreshing = progress,
+            onRefresh = {
+                withdraws.refresh()
+                viewModel.getMe()
+            }
+        )
+
 
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(
@@ -76,19 +178,77 @@ fun TransactionsScreen(
         )
     }) { pad ->
 
-        var sum by remember {
-            mutableStateOf("")
-        }
-
-        var cardNumber by remember {
-            mutableStateOf("")
-        }
-
         Box(
             modifier = Modifier
                 .padding(pad)
                 .background(Color(0xFFF0F0F0))
+                .pullRefresh(pullRefreshState)
         ) {
+
+            if (showCancelDialog) {
+                AlertDialog(onDismissRequest = { showCancelDialog = false }, confirmButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.cancelWithdraw(cancelId)
+                            showCancelDialog = false
+                        }) {
+                        Text(
+                            text = "Ha, bekor qilinsin",
+                            style = TextStyle(
+                                fontSize = 13.sp,
+                                lineHeight = 15.sp,
+                                fontFamily = FontFamily(Font(R.font.roboto_medium)),
+                                fontWeight = FontWeight(500),
+                                color = Color(0xFFD60A0A),
+                                textAlign = TextAlign.Right,
+                            )
+                        )
+                    }
+                }, dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showCancelDialog = false
+                        }
+                    ) {
+                        Text(
+                            text = "Yo‘q, ortga qaytish",
+                            style = TextStyle(
+                                fontSize = 13.sp,
+                                lineHeight = 15.sp,
+                                fontFamily = FontFamily(Font(R.font.roboto_medium)),
+                                fontWeight = FontWeight(500),
+                                color = Color(0xFF51AEE7),
+                                textAlign = TextAlign.Right,
+                            )
+                        )
+                    }
+                }, title = {
+                    Text(
+                        text = "To‘lo‘v uchun so‘rovingiz bekor qilinmoqda",
+                        style = TextStyle(
+                            fontSize = 20.sp,
+                            lineHeight = 23.sp,
+                            fontFamily = FontFamily(Font(R.font.roboto_medium)),
+                            fontWeight = FontWeight(500),
+                            color = Color(0xFF222222),
+                        )
+                    )
+                }, text = {
+                    Text(
+                        text = "Hisobingizga pul 10 daqiqa ichida qayta tushirib beriladi",
+                        style = TextStyle(
+                            fontSize = 15.sp,
+                            lineHeight = 18.sp,
+                            fontFamily = FontFamily(Font(R.font.roboto_regular)),
+                            fontWeight = FontWeight(400),
+                            color = Color(0xFF83868B),
+                        )
+                    )
+                }, shape = RoundedCornerShape(20.dp),
+                    backgroundColor = Color(0xC7FFFFFF)
+                )
+            }
+
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 70.dp)
@@ -117,7 +277,11 @@ fun TransactionsScreen(
                         )
 
                         Text(
-                            text = "12,000,000 uzs",
+                            text = "${
+                                getMeDto?.data?.balance?.toString()?.formatToPrice()?.ifBlank {
+                                    "0"
+                                }
+                            } uzs",
                             style = TextStyle(
                                 fontSize = 32.sp,
                                 lineHeight = 38.sp,
@@ -144,7 +308,12 @@ fun TransactionsScreen(
                             )
 
                             Text(
-                                text = "86,005.500 uzs",
+                                text = "${
+                                    getMeDto?.data?.hold_balance?.toString()?.formatToPrice()
+                                        ?.ifBlank {
+                                            "0"
+                                        }
+                                } uzs",
                                 style = TextStyle(
                                     fontSize = 16.sp,
                                     lineHeight = 19.sp,
@@ -154,7 +323,6 @@ fun TransactionsScreen(
                                 )
                             )
                         }
-
 
 
                         Row(
@@ -186,7 +354,7 @@ fun TransactionsScreen(
                                 )
 
                                 Text(
-                                    text = "56",
+                                    text = "${getMeDto?.data?.coins ?: 0}",
                                     style = TextStyle(
                                         fontSize = 15.sp,
                                         lineHeight = 18.sp,
@@ -218,7 +386,7 @@ fun TransactionsScreen(
                                 )
 
                                 Text(
-                                    text = "77709",
+                                    text = "${getMeDto?.data?.id}",
                                     style = TextStyle(
                                         fontSize = 15.sp,
                                         lineHeight = 18.sp,
@@ -311,7 +479,7 @@ fun TransactionsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.Bottom
                         ) {
-                            BasicTextField(
+                            TextField(
                                 value = sum,
                                 onValueChange = { str ->
                                     sum = if (str.startsWith("0")) {
@@ -323,59 +491,46 @@ fun TransactionsScreen(
                                 },
                                 modifier = Modifier
                                     .padding(top = 5.dp)
-                                    .width(IntrinsicSize.Min),
+                                    .wrapContentWidth(Alignment.Start),
                                 singleLine = true,
-                                cursorBrush = SolidColor(Color.Black),
                                 textStyle = TextStyle(
-                                    fontSize = 36.sp,
+                                    fontSize = 30.sp,
                                     lineHeight = 45.sp,
                                     fontFamily = FontFamily(Font(R.font.roboto_medium)),
                                     fontWeight = FontWeight(600),
                                     color = Color.Black,
                                 ),
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    errorContainerColor = Color.Transparent,
+                                    disabledContainerColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    disabledIndicatorColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    errorIndicatorColor = Color.Transparent,
+                                ),
+                                placeholder = {
+                                    Text(
+                                        text = "0 so'm",
+                                        style = TextStyle(
+                                            fontSize = 30.sp,
+                                            lineHeight = 45.sp,
+                                            fontFamily = FontFamily(Font(R.font.roboto_medium)),
+                                            fontWeight = FontWeight(600),
+                                            color = Color(0xFF8C8C8C),
+                                        )
+                                    )
+                                },
+                                visualTransformation = CurrencyAmountInputVisualTransformation()
                             )
-                            Text(
-                                text = "${if ((sum.toIntOrNull() ?: 0) > 0) "" else "0"} uzs",
-                                style = TextStyle(
-                                    fontSize = 36.sp,
-                                    lineHeight = 45.sp,
-                                    fontFamily = FontFamily(Font(R.font.roboto_medium)),
-                                    fontWeight = FontWeight(600),
-                                    color = Color(0xFF8C8C8C),
-                                )
-                            )
+
                         }
 
                     }
                 }
 
-                item {
-                    Text(
-                        text = "Kutilmoqda",
-                        style = TextStyle(
-                            fontSize = 15.sp,
-                            lineHeight = 18.sp,
-                            fontFamily = FontFamily(Font(R.font.roboto_medium)),
-                            fontWeight = FontWeight(500),
-                            color = Color(0xFF51AEE7),
-                        ),
-                        modifier = Modifier
-                            .padding(top = 8.dp)
-                            .fillMaxWidth()
-                            .background(Color.White)
-                            .padding(
-                                top = 20.dp,
-                                bottom = 10.dp,
-                                start = 16.dp,
-                                end = 16.dp
-                            )
-                    )
-                }
-
-                items(2) {
-                    ItemTransactionRequest()
-                }
 
                 item {
                     Text(
@@ -400,15 +555,36 @@ fun TransactionsScreen(
                     )
                 }
 
-                items(10) {
-                    ItemTransactionRequest()
+                items(withdraws, key = {
+                    it.id
+                }) {
+                    it?.let { wth ->
+                        ItemTransactionRequest(
+                            wth
+                        ) {
+                            cancelId = it
+                            showCancelDialog = true
+                        }
+                    }
                 }
 
             }
 
+            PullRefreshIndicator(
+                refreshing = progress, state = pullRefreshState, modifier = Modifier.align(
+                    Alignment.TopCenter
+                )
+            )
 
             Button(
-                onClick = { /*TODO*/ },
+                onClick = {
+                    viewModel.createWithdraw(
+                        GetMoneyRequest(
+                            cardNumber,
+                            sum.toLongOrNull() ?: 0
+                        )
+                    )
+                },
                 modifier = Modifier
                     .padding(horizontal = 20.dp, vertical = 10.dp)
                     .align(Alignment.BottomCenter)
@@ -437,7 +613,14 @@ fun TransactionsScreen(
 }
 
 @Composable
-fun ItemTransactionRequest() {
+fun ItemTransactionRequest(
+    data: WithdrawsDto,
+    onCancelClick: (Int) -> Unit
+) {
+
+    var expanded by remember {
+        mutableStateOf(false)
+    }
 
     Column(
         modifier = Modifier
@@ -450,6 +633,11 @@ fun ItemTransactionRequest() {
                 end = 16.dp,
                 bottom = 12.dp
             )
+            .clickable(interactionSource = remember {
+                MutableInteractionSource()
+            }, indication = null) {
+                expanded = !expanded
+            }
     ) {
 
         Box(
@@ -462,9 +650,17 @@ fun ItemTransactionRequest() {
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_time_fill),
+                    painter = painterResource(
+                        id = when (data.status) {
+                            "new" -> R.drawable.ic_time_fill
+                            "cancelled" -> R
+                                .drawable.ic_cancelled
+
+                            else -> R.drawable.ic_success_green
+                        }
+                    ),
                     contentDescription = null,
-                    tint = Color(0xFFF1A30C),
+                    tint = Color.Unspecified,
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
@@ -473,13 +669,13 @@ fun ItemTransactionRequest() {
                             color = Color(0xFFF1A30C),
                             CircleShape
                         )
-                        .background(Color(0x33F1A30C))
+                        .background(Color(if (data.status == "new") 0x33F1A30C else if (data.status == "cancelled") 0x33ED5974 else 0x3323B60B))
                         .padding(12.dp)
                 )
 
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     Text(
-                        text = "9860 1234 5678 9012",
+                        text = data.account,
                         style = TextStyle(
                             fontSize = 17.sp,
                             lineHeight = 20.sp,
@@ -489,7 +685,7 @@ fun ItemTransactionRequest() {
                         )
                     )
                     Text(
-                        text = "500,000 so‘m",
+                        text = "${data.amount.toString().formatToPrice()} so‘m",
                         style = TextStyle(
                             fontSize = 15.sp,
                             lineHeight = 18.sp,
@@ -502,7 +698,7 @@ fun ItemTransactionRequest() {
 
             }
             Text(
-                text = "2 daq oldin",
+                text = data.created_at_label,
                 style = TextStyle(
                     fontSize = 11.sp,
                     lineHeight = 13.sp,
@@ -513,6 +709,48 @@ fun ItemTransactionRequest() {
                 ),
                 modifier = Modifier.align(Alignment.BottomEnd)
             )
+        }
+
+        if (data.status == "new") AnimatedVisibility(visible = expanded) {
+            Row(
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(7.dp))
+                    .border(
+                        width = 1.dp,
+                        color = Color(0xFFD60A0A),
+                        shape = RoundedCornerShape(size = 7.dp)
+                    )
+                    .clickable(interactionSource = remember {
+                        MutableInteractionSource()
+                    }, indication = rememberRipple()) {
+                        onCancelClick(data.id)
+                    }
+                    .padding(vertical = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_close_line),
+                    contentDescription = null,
+                    tint = Color(0xFFD60A0A),
+                    modifier = Modifier.size(16.dp)
+                )
+
+                Text(
+                    text = "Bekor qilish",
+                    style = TextStyle(
+                        fontSize = 16.sp,
+                        lineHeight = 15.sp,
+                        fontFamily = FontFamily(Font(R.font.roboto_medium)),
+                        fontWeight = FontWeight(500),
+                        color = Color(0xFFD60A0A),
+                    )
+                )
+            }
+
         }
 
     }

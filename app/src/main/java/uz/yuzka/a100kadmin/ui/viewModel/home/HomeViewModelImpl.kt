@@ -12,11 +12,13 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import uz.yuzka.a100kadmin.base.SaleStatus
 import uz.yuzka.a100kadmin.data.response.CharityItem
+import uz.yuzka.a100kadmin.data.response.GetMeDto
 import uz.yuzka.a100kadmin.data.response.OrderItem
 import uz.yuzka.a100kadmin.data.response.PromoCodeItem
 import uz.yuzka.a100kadmin.data.response.TransactionItem
 import uz.yuzka.a100kadmin.usecase.main.MainUseCase
 import uz.yuzka.a100kadmin.utils.eventValueFlow
+import uz.yuzka.a100kadmin.utils.isConnected
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,11 +32,13 @@ class HomeViewModelImpl @Inject constructor(
     override val transactions = eventValueFlow<PagingData<TransactionItem>>()
     override val charities = eventValueFlow<PagingData<CharityItem>>()
     override val promoCodes = eventValueFlow<PagingData<PromoCodeItem>>()
+    override val getMeData = eventValueFlow<GetMeDto>()
 
     override val hasLoadedPromoCodes = MutableLiveData(false)
     override val hasLoadedTransactions = MutableLiveData(false)
     override val hasLoadedCharities = MutableLiveData(false)
     override val hasLoadedOrders = MutableLiveData(false)
+
 
     override fun selectOrderStatus(status: SaleStatus) {
         this.status.value = status
@@ -95,5 +99,26 @@ class HomeViewModelImpl @Inject constructor(
         }
     }
 
+    override fun getMeFromLocal() {
+        viewModelScope.launch {
+            useCase.getMeFromLocal().onEach {
+                it?.let { getMeData.emit(it) }
+            }.launchIn(viewModelScope)
+        }
+    }
+
+    override fun getMe() {
+        if (!isConnected()) {
+            return
+        }
+        viewModelScope.launch {
+            progressFlow.emit(true)
+            useCase.getMe().onEach {
+                it.onSuccess { res ->
+                    res?.let { dto -> getMeData.emit(dto) }
+                }
+            }.launchIn(viewModelScope)
+        }
+    }
 
 }

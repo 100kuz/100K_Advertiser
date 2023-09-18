@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,16 +42,17 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uz.yuzka.a100kadmin.R
 import uz.yuzka.a100kadmin.ui.theme.BackButton
 
-@Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SetCharityBalance() {
+fun SetCharityBalance(
+    charity: State<String>,
+    onConfirm: (String) -> Unit
+) {
 
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(
@@ -67,7 +69,7 @@ fun SetCharityBalance() {
             },
             navigationIcon = {
                 BackButton {
-                    //todo
+                    onConfirm(charity.value)
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
@@ -77,7 +79,7 @@ fun SetCharityBalance() {
     }) { pad ->
 
         var sum by remember {
-            mutableStateOf("")
+            mutableStateOf(charity.value)
         }
 
         Box(
@@ -341,14 +343,14 @@ fun SetCharityBalance() {
             }
 
             Button(
-                onClick = { /*TODO*/ },
+                onClick = { onConfirm(sum) },
                 modifier = Modifier
                     .padding(horizontal = 20.dp, vertical = 30.dp)
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(Color(0xFF51AEE7)),
-                enabled = false
+                enabled = true
             ) {
                 Text(
                     text = "Tasdiqlash",

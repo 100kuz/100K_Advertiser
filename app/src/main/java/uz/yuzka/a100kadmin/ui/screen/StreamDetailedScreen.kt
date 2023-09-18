@@ -23,6 +23,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
@@ -33,6 +37,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,19 +55,38 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import uz.yuzka.a100kadmin.R
 import uz.yuzka.a100kadmin.ui.theme.BackButton
 import uz.yuzka.a100kadmin.ui.theme.PrimaryColor
+import uz.yuzka.a100kadmin.ui.viewModel.main.MainViewModel
+import uz.yuzka.a100kadmin.ui.viewModel.main.MainViewModelImpl
+import uz.yuzka.a100kadmin.utils.formatToPrice
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun StreamDetailedScreen(onBackPress: () -> Unit) {
-
+fun StreamDetailedScreen(
+    id: Int,
+    viewModel: MainViewModel = hiltViewModel<MainViewModelImpl>(),
+    onBackPress: () -> Unit
+) {
 
     val context = LocalContext.current
 
     val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+
+    LaunchedEffect(id) {
+        viewModel.getStreamById(id)
+    }
+
+    val data by viewModel.streamFlow.collectAsState(initial = null)
+    val progress by viewModel.progressFlow.collectAsState(initial = false)
+
+    val pullRefreshState =
+        rememberPullRefreshState(
+            refreshing = progress,
+            onRefresh = { viewModel.getStreamById(id) })
 
 
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
@@ -89,10 +115,12 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
         Box(
             modifier = Modifier
                 .padding(pad)
+                .fillMaxSize()
                 .background(Color(0xFFF0F0F0))
+                .pullRefresh(pullRefreshState)
         ) {
 
-            LazyColumn(
+            if (data != null) LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(bottom = 20.dp)
@@ -114,7 +142,7 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
                         ) {
 
                             AsyncImage(
-                                model = "https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-980x653.jpg",
+                                model = data?.product?.image,
                                 contentDescription = null,
                                 modifier = Modifier
                                     .height(105.dp)
@@ -125,7 +153,7 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
 
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 Text(
-                                    text = "Uy uchun gul idishda - aloe guli",
+                                    text = data?.product?.title ?: "",
                                     style = TextStyle(
                                         fontSize = 16.sp,
                                         lineHeight = 19.sp,
@@ -145,7 +173,10 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
                                         tint = Color.Unspecified
                                     )
                                     Text(
-                                        text = "94,000 UZS",
+                                        text = "${
+                                            data?.product?.admin_fee?.toString()?.formatToPrice()
+                                                ?: "0"
+                                        } so'm",
                                         style = TextStyle(
                                             fontSize = 16.sp,
                                             lineHeight = 19.sp,
@@ -182,7 +213,10 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
                                 )
                             )
                             Text(
-                                text = "130,000 so‘m",
+                                text = "${
+                                    data?.product?.price?.toString()?.formatToPrice()
+                                        ?: "0"
+                                } so'm",
                                 style = TextStyle(
                                     fontSize = 15.sp,
                                     lineHeight = 18.sp,
@@ -249,7 +283,7 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
                                 )
                             )
                             Text(
-                                text = "4,204",
+                                text = "${data?.product?.quantity ?: 0} ta",
                                 style = TextStyle(
                                     fontSize = 15.sp,
                                     lineHeight = 18.sp,
@@ -284,7 +318,7 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
                         )
 
                         BasicTextField(
-                            value = "https://100k.uz/oqim/174313",
+                            value = data?.link ?: "",
                             onValueChange = {
 
                             },
@@ -297,7 +331,7 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
                         ) {
                             Text(
                                 text =
-                                "https://100k.uz/oqim/174313",
+                                data?.link ?: "",
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .background(
@@ -327,7 +361,7 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
                                     clipboardManager.setPrimaryClip(
                                         ClipData.newPlainText(
                                             "",
-                                            "//TODO"
+                                            data?.link
                                         )
                                     )
                                     Toast.makeText(
@@ -363,7 +397,7 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
                                     clipboardManager.setPrimaryClip(
                                         ClipData.newPlainText(
                                             "",
-                                            "//TODO"
+                                            data?.link
                                         )
                                     )
                                     Toast.makeText(
@@ -442,7 +476,9 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
 
                             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                                 Text(
-                                    text = "5,000 so‘m",
+                                    text = "${
+                                        data?.charity?.toString()?.formatToPrice() ?: 0
+                                    } so'm",
                                     style = TextStyle(
                                         fontSize = 15.sp,
                                         lineHeight = 18.sp,
@@ -490,7 +526,9 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
 
                             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                                 Text(
-                                    text = "100 so‘m",
+                                    text = "${
+                                        data?.discount?.toString()?.formatToPrice() ?: 0
+                                    } so'm",
                                     style = TextStyle(
                                         fontSize = 15.sp,
                                         lineHeight = 18.sp,
@@ -527,46 +565,6 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
                             thickness = 0.5.dp,
                             color = Color(0xFFEDEDED)
                         )
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-
-                            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                                Text(
-                                    text = "0 so‘m",
-                                    style = TextStyle(
-                                        fontSize = 15.sp,
-                                        lineHeight = 18.sp,
-                                        fontFamily = FontFamily(Font(R.font.roboto_medium)),
-                                        fontWeight = FontWeight(500),
-                                        color = Color(0xFF222222),
-                                    )
-                                )
-
-                                Text(
-                                    text = "Reklamaga ajratilgan summa",
-                                    style = TextStyle(
-                                        fontSize = 12.sp,
-                                        lineHeight = 14.sp,
-                                        fontFamily = FontFamily(Font(R.font.roboto_regular)),
-                                        fontWeight = FontWeight(400),
-                                        color = Color(0xFF83868B),
-                                    )
-                                )
-                            }
-
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_arrow_right_icon),
-                                contentDescription = null,
-                                tint = Color(0xFF868686)
-                            )
-
-                        }
 
                     }
                 }
@@ -608,7 +606,7 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
                         )
 
                         Text(
-                            text = "56,482",
+                            text = "${data?.visits ?: 0}",
                             style = TextStyle(
                                 fontSize = 24.sp,
                                 lineHeight = 28.sp,
@@ -688,7 +686,7 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
                                 }
 
                                 Text(
-                                    text = "30",
+                                    text = "${data?.orders_stats?.new ?: 0}",
                                     style = TextStyle(
                                         fontSize = 20.sp,
                                         lineHeight = 23.sp,
@@ -741,7 +739,7 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
                                 }
 
                                 Text(
-                                    text = "69",
+                                    text = "${data?.orders_stats?.pending ?: 0}",
                                     style = TextStyle(
                                         fontSize = 20.sp,
                                         lineHeight = 23.sp,
@@ -822,7 +820,7 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
                                 }
 
                                 Text(
-                                    text = "30",
+                                    text = "${data?.orders_stats?.sent ?: 0}",
                                     style = TextStyle(
                                         fontSize = 20.sp,
                                         lineHeight = 23.sp,
@@ -875,7 +873,7 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
                                 }
 
                                 Text(
-                                    text = "69",
+                                    text = "${data?.orders_stats?.delivered ?: 0}",
                                     style = TextStyle(
                                         fontSize = 20.sp,
                                         lineHeight = 23.sp,
@@ -928,7 +926,7 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
                                 }
 
                                 Text(
-                                    text = "69",
+                                    text = "${data?.orders_stats?.accepted ?: 0}",
                                     style = TextStyle(
                                         fontSize = 20.sp,
                                         lineHeight = 23.sp,
@@ -1008,7 +1006,7 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
                                 }
 
                                 Text(
-                                    text = "30",
+                                    text = "${data?.orders_stats?.spam ?: 0}",
                                     style = TextStyle(
                                         fontSize = 20.sp,
                                         lineHeight = 23.sp,
@@ -1061,7 +1059,7 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
                                 }
 
                                 Text(
-                                    text = "69",
+                                    text = "${data?.orders_stats?.canceled ?: 0}",
                                     style = TextStyle(
                                         fontSize = 20.sp,
                                         lineHeight = 23.sp,
@@ -1114,7 +1112,7 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
                                 }
 
                                 Text(
-                                    text = "69",
+                                    text = "${data?.orders_stats?.archived ?: 0}",
                                     style = TextStyle(
                                         fontSize = 20.sp,
                                         lineHeight = 23.sp,
@@ -1132,8 +1130,13 @@ fun StreamDetailedScreen(onBackPress: () -> Unit) {
                     }
                 }
 
-
             }
+
+            PullRefreshIndicator(
+                refreshing = progress,
+                state = pullRefreshState,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
 
         }
     }

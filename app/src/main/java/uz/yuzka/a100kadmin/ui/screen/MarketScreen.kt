@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,23 +13,28 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,13 +49,52 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.items
 import coil.compose.AsyncImage
 import uz.yuzka.a100kadmin.R
+import uz.yuzka.a100kadmin.data.response.ProductDto
+import uz.yuzka.a100kadmin.ui.screen.tools.CustomTab
 import uz.yuzka.a100kadmin.ui.theme.PrimaryColor
+import uz.yuzka.a100kadmin.ui.viewModel.main.MainViewModel
+import uz.yuzka.a100kadmin.ui.viewModel.main.MainViewModelImpl
+import uz.yuzka.a100kadmin.utils.formatToPrice
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun MarketScreen(onProductClick: (Int) -> Unit) {
+fun MarketScreen(
+    viewModel: MainViewModel = hiltViewModel<MainViewModelImpl>(),
+    onProductClick: (ProductDto) -> Unit
+) {
+
+    val hasLoadedCategories by viewModel.hasLoadedCategories.observeAsState(initial = false)
+    val categories = viewModel.categories.collectAsLazyPagingItems()
+    val products = viewModel.products.collectAsLazyPagingItems()
+    val hasLoadedProducts by viewModel.hasLoadedProducts.observeAsState(initial = false)
+    val selectedCategory by viewModel.categoryId.observeAsState(initial = null)
+    val progress by viewModel.progressFlow.collectAsState(initial = false)
+
+    LaunchedEffect(hasLoadedCategories) {
+        if (!hasLoadedCategories) {
+            viewModel.getCategories()
+        }
+    }
+
+    LaunchedEffect(hasLoadedProducts) {
+        if (!hasLoadedProducts) {
+            viewModel.getStoreProducts(category = selectedCategory)
+        }
+    }
+
+
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = progress,
+        onRefresh = { products.refresh() }
+    )
+
+    val lazyListState = rememberLazyListState()
 
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(
@@ -72,83 +115,87 @@ fun MarketScreen(onProductClick: (Int) -> Unit) {
         )
     }) { pad ->
 
-        var selectedTab by remember {
-            mutableIntStateOf(2)
-        }
-
         Box(
             modifier = Modifier
                 .padding(pad)
                 .fillMaxSize()
                 .background(Color(0xFFF0F0F0))
+                .pullRefresh(pullRefreshState)
         ) {
 
-            ScrollableTabRow(
-                selectedTabIndex = selectedTab,
-                edgePadding = 5.dp,
-                indicator = { list ->
-                    Spacer(
-                        modifier = Modifier
-                            .tabIndicatorOffset(list[selectedTab])
-                            .height(4.dp)
-                            .background(
-                                color = PrimaryColor, RoundedCornerShape(
-                                    topStart = 8.dp,
-                                    topEnd = 8.dp
-                                )
-                            )
-                    )
-                }, modifier = Modifier
-                    .fillMaxWidth()
-                    .height(41.dp)
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = PaddingValues(horizontal = 15.dp)
             ) {
-                Tab(
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
-                    selectedContentColor = Color(0xFF51AEE7),
-                    unselectedContentColor = Color(0xFF9B9B9B),
-                    modifier = Modifier.height(41.dp)
-                ) {
-                    Text(text = "Barchasi", fontSize = 15.sp)
+                item {
+                    CustomTab(
+                        selected = selectedCategory == null,
+                        onClick = { viewModel.getStoreProducts(null) },
+                        selectedContentColor = Color(0xFF51AEE7),
+                        unselectedContentColor = Color(0xFF9B9B9B),
+                        label = "Barchasi"
+                    )
                 }
-                Tab(
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
-                    selectedContentColor = Color(0xFF51AEE7),
-                    unselectedContentColor = Color(0xFF9B9B9B)
-                ) {
-                    Text(text = "Yangi", fontSize = 15.sp)
+
+                items(categories.itemCount, key = {
+                    categories[it]?.id ?: Any()
+                }) {
+                    categories[it]?.let { cat ->
+                        CustomTab(
+                            selected = selectedCategory == cat.id,
+                            onClick = { viewModel.getStoreProducts(cat.id) },
+                            selectedContentColor = Color(0xFF51AEE7),
+                            unselectedContentColor = Color(0xFF9B9B9B),
+                            label = cat.title ?: ""
+                        )
+                    }
                 }
-                Tab(
-                    selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 },
-                    selectedContentColor = Color(0xFF51AEE7),
-                    unselectedContentColor = Color(0xFF9B9B9B)
-                ) {
-                    Text(text = "Yetkazishga tayyor", fontSize = 15.sp)
-                }
-                Tab(
-                    selected = selectedTab == 3,
-                    onClick = { selectedTab = 3 },
-                    selectedContentColor = Color(0xFF51AEE7),
-                    unselectedContentColor = Color(0xFF9B9B9B)
-                ) {
-                    Text(text = "Yo'lda", fontSize = 15.sp)
-                }
+
             }
 
             LazyColumn(
+                state = lazyListState,
                 modifier = Modifier
-                    .padding(top = 42.dp)
+                    .padding(top = 50.dp)
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(bottom = 70.dp)
             ) {
-                items(20) {
-                    ItemProduct(onProductClick)
+                items(products) {
+                    it?.let { pr -> ItemProduct(pr, onProductClick) }
                 }
             }
 
+
+            if (products.loadState.refresh is LoadState.NotLoading) {
+                if (products.itemCount == 0) Box(
+                    modifier = Modifier
+                        .padding(top = 50.dp)
+                        .fillMaxSize()
+                        .verticalScroll(
+                            rememberScrollState()
+                        )
+                ) {
+                    Text(
+                        text = "Mahsulot topilmadi...",
+                        color = Color.Black,
+                        fontFamily = FontFamily(Font(R.font.roboto_medium)),
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 20.sp, modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+            }
+
+
+            PullRefreshIndicator(
+                refreshing = progress,
+                state = pullRefreshState,
+                modifier = Modifier.align(
+                    Alignment.TopCenter
+                )
+            )
 
         }
     }
@@ -156,7 +203,10 @@ fun MarketScreen(onProductClick: (Int) -> Unit) {
 
 
 @Composable
-fun ItemProduct(onProductClick: (Int) -> Unit) {
+fun ItemProduct(
+    data: ProductDto,
+    onProductClick: (ProductDto) -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -173,7 +223,7 @@ fun ItemProduct(onProductClick: (Int) -> Unit) {
         ) {
 
             AsyncImage(
-                model = "https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-980x653.jpg",
+                model = data.image,
                 contentDescription = null,
                 modifier = Modifier
                     .height(105.dp)
@@ -184,7 +234,7 @@ fun ItemProduct(onProductClick: (Int) -> Unit) {
 
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = "Uy uchun gul idishda - aloe guli",
+                    text = data.title ?: "",
                     style = TextStyle(
                         fontSize = 16.sp,
                         lineHeight = 19.sp,
@@ -204,7 +254,7 @@ fun ItemProduct(onProductClick: (Int) -> Unit) {
                         tint = Color.Unspecified
                     )
                     Text(
-                        text = "94,000 UZS",
+                        text = "${data.adminFee?.toString()?.formatToPrice() ?: "0"} so'm",
                         style = TextStyle(
                             fontSize = 16.sp,
                             lineHeight = 19.sp,
@@ -223,7 +273,7 @@ fun ItemProduct(onProductClick: (Int) -> Unit) {
             modifier = Modifier
                 .padding(
                     horizontal = 4.dp,
-                    vertical = 10.dp
+                    vertical = 5.dp
                 )
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -241,7 +291,7 @@ fun ItemProduct(onProductClick: (Int) -> Unit) {
                 )
             )
             Text(
-                text = "130,000 so‘m",
+                text = "${data.price?.toString()?.formatToPrice() ?: "0"} so'm",
                 style = TextStyle(
                     fontSize = 15.sp,
                     lineHeight = 18.sp,
@@ -257,7 +307,7 @@ fun ItemProduct(onProductClick: (Int) -> Unit) {
             modifier = Modifier
                 .padding(
                     horizontal = 4.dp,
-                    vertical = 10.dp
+                    vertical = 5.dp
                 )
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -291,7 +341,7 @@ fun ItemProduct(onProductClick: (Int) -> Unit) {
             modifier = Modifier
                 .padding(
                     horizontal = 4.dp,
-                    vertical = 10.dp
+                    vertical = 5.dp
                 )
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -308,7 +358,7 @@ fun ItemProduct(onProductClick: (Int) -> Unit) {
                 )
             )
             Text(
-                text = "4,204",
+                text = data.quantity?.toString()?.formatToPrice() ?: "0",
                 style = TextStyle(
                     fontSize = 15.sp,
                     lineHeight = 18.sp,
@@ -322,7 +372,7 @@ fun ItemProduct(onProductClick: (Int) -> Unit) {
 
         Button(
             onClick = {
-                onProductClick(1)
+                onProductClick(data)
             },
             modifier = Modifier
                 .fillMaxWidth()

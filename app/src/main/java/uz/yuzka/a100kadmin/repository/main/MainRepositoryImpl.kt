@@ -11,12 +11,12 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import uz.yuzka.a100kadmin.base.BaseErrorResponse
+import uz.yuzka.a100kadmin.data.request.CreateStreamRequest
 import uz.yuzka.a100kadmin.data.response.BalanceResponse
 import uz.yuzka.a100kadmin.data.response.CategoryDto
 import uz.yuzka.a100kadmin.data.response.CharityItem
 import uz.yuzka.a100kadmin.data.response.CreatePromoCodeRequest
 import uz.yuzka.a100kadmin.data.response.GetMeDto
-import uz.yuzka.a100kadmin.data.response.GetMoneyResponse
 import uz.yuzka.a100kadmin.data.response.MessageResponse
 import uz.yuzka.a100kadmin.data.response.NotificationDto
 import uz.yuzka.a100kadmin.data.response.OrderItem
@@ -25,7 +25,10 @@ import uz.yuzka.a100kadmin.data.response.ProductItemDto
 import uz.yuzka.a100kadmin.data.response.PromoCodeData
 import uz.yuzka.a100kadmin.data.response.PromoCodeItem
 import uz.yuzka.a100kadmin.data.response.StatisticsDto
+import uz.yuzka.a100kadmin.data.response.StreamDetailedDto
+import uz.yuzka.a100kadmin.data.response.StreamDto
 import uz.yuzka.a100kadmin.data.response.TransactionItem
+import uz.yuzka.a100kadmin.data.response.WithdrawItemData
 import uz.yuzka.a100kadmin.data.response.WithdrawsDto
 import uz.yuzka.a100kadmin.datasource.AllSalesDataSource
 import uz.yuzka.a100kadmin.datasource.CategoriesDataSource
@@ -33,11 +36,12 @@ import uz.yuzka.a100kadmin.datasource.CharitiesDataSource
 import uz.yuzka.a100kadmin.datasource.NotificationsDataSource
 import uz.yuzka.a100kadmin.datasource.PromoCodesDataSource
 import uz.yuzka.a100kadmin.datasource.StoreProductsDataSource
+import uz.yuzka.a100kadmin.datasource.StreamsDataSource
 import uz.yuzka.a100kadmin.datasource.TransactionsDataSource
 import uz.yuzka.a100kadmin.datasource.WithdrawsDataSource
 import uz.yuzka.a100kadmin.network.MainApi
 import uz.yuzka.a100kadmin.pref.MyPref
-import uz.yuzka.seller.data.request.GetMoneyRequest
+import uz.yuzka.a100kadmin.data.request.GetMoneyRequest
 import uz.yuzka.seller.data.request.LogoutRequest
 import uz.yuzka.seller.data.request.SetDeviceTokenRequest
 import javax.inject.Inject
@@ -148,8 +152,7 @@ class MainRepositoryImpl @Inject constructor(
     }.flowOn(Dispatchers.IO)
 
     override fun getStoreProducts(
-        status: String?,
-        search: String?
+        category: Int?
     ): Flow<PagingData<ProductDto>> {
         return try {
             Pager(
@@ -157,7 +160,7 @@ class MainRepositoryImpl @Inject constructor(
                     pageSize = 4
                 ),
                 pagingSourceFactory = {
-                    StoreProductsDataSource(api).create(status, search)
+                    StoreProductsDataSource(api).create(category)
                 }, initialKey = 1
             ).flow
         } catch (_: Exception) {
@@ -166,7 +169,6 @@ class MainRepositoryImpl @Inject constructor(
     }
 
     override fun getStoreWithdraws(
-        id: Int
     ): Flow<PagingData<WithdrawsDto>> {
 
         return try {
@@ -182,31 +184,6 @@ class MainRepositoryImpl @Inject constructor(
             flow { PagingData.empty<WithdrawsDto>() }
         }
     }
-
-
-    override suspend fun getMoney(
-        store: Int,
-        getMoneyRequest: GetMoneyRequest
-    ): Flow<Result<GetMoneyResponse>> = flow {
-        val response = api.getMoney(store, getMoneyRequest)
-
-        if (response.isSuccessful) {
-            emit(Result.success(response.body()!!))
-        } else {
-            val errorData: BaseErrorResponse? = try {
-                Gson().fromJson<BaseErrorResponse?>(
-                    response.errorBody()?.string(),
-                    object : TypeToken<BaseErrorResponse>() {}.type
-                )
-            } catch (e: Exception) {
-                null
-            }
-            emit(Result.failure(Throwable(errorData?.message)))
-        }
-    }.catch {
-        val errorMessage = Throwable("Server bilan muammo bo'ldi")
-        emit(Result.failure(errorMessage))
-    }.flowOn(Dispatchers.IO)
 
     override suspend fun getStatistics(
         id: Int
@@ -354,6 +331,116 @@ class MainRepositoryImpl @Inject constructor(
             }
         }
     }
+
+    override fun getMeFromLocal(): Flow<GetMeDto?> = flow {
+        emit(pref.getMeDto)
+    }.catch {
+        emit(null)
+    }.flowOn(Dispatchers.IO)
+
+
+    override fun getStreamById(id: Int): Flow<Result<StreamDto>> = flow {
+        val response = api.getStreamById(id)
+
+        if (response.isSuccessful) {
+            emit(Result.success(response.body()!!))
+        } else {
+            val errorData: BaseErrorResponse? = try {
+                Gson().fromJson<BaseErrorResponse?>(
+                    response.errorBody()?.string(),
+                    object : TypeToken<BaseErrorResponse>() {}.type
+                )
+            } catch (e: Exception) {
+                null
+            }
+            emit(Result.failure(Throwable(errorData?.message)))
+        }
+    }.catch {
+        val errorMessage = Throwable(it.message)
+        emit(Result.failure(errorMessage))
+    }.flowOn(Dispatchers.IO)
+
+
+    override fun createStream(data: CreateStreamRequest): Flow<Result<StreamDto>> = flow {
+        val response = api.createStreams(data)
+
+        if (response.isSuccessful) {
+            emit(Result.success(response.body()!!))
+        } else {
+            val errorData: BaseErrorResponse? = try {
+                Gson().fromJson<BaseErrorResponse?>(
+                    response.errorBody()?.string(),
+                    object : TypeToken<BaseErrorResponse>() {}.type
+                )
+            } catch (e: Exception) {
+                null
+            }
+            emit(Result.failure(Throwable(errorData?.message)))
+        }
+    }.catch {
+        val errorMessage = Throwable(it.message)
+        emit(Result.failure(errorMessage))
+    }.flowOn(Dispatchers.IO)
+
+    override fun getStreams(): Flow<PagingData<StreamDetailedDto>> {
+        return try {
+            Pager(
+                config = PagingConfig(
+                    pageSize = 4
+                ),
+                pagingSourceFactory = {
+                    StreamsDataSource(api).create()
+                }, initialKey = 1
+            ).flow
+        } catch (_: Exception) {
+            flow {
+                emit(PagingData.empty())
+            }
+        }
+    }
+
+    override fun cancelWithdraw(id: Int): Flow<Result<WithdrawsDto>> = flow {
+        val response = api.cancelWithdraw(id)
+
+        if (response.isSuccessful) {
+            emit(Result.success(response.body()!!.data))
+        } else {
+            val errorData: BaseErrorResponse? = try {
+                Gson().fromJson<BaseErrorResponse?>(
+                    response.errorBody()?.string(),
+                    object : TypeToken<BaseErrorResponse>() {}.type
+                )
+            } catch (e: Exception) {
+                null
+            }
+            emit(Result.failure(Throwable(errorData?.message)))
+        }
+    }.catch {
+        val errorMessage = Throwable(it.message)
+        emit(Result.failure(errorMessage))
+    }.flowOn(Dispatchers.IO)
+
+
+    override fun createWithdraw(data: GetMoneyRequest): Flow<Result<WithdrawItemData>> = flow {
+        val response = api.createWithdraw(data)
+
+        if (response.isSuccessful) {
+            emit(Result.success(response.body()!!))
+        } else {
+            val errorData: BaseErrorResponse? = try {
+                Gson().fromJson<BaseErrorResponse?>(
+                    response.errorBody()?.string(),
+                    object : TypeToken<BaseErrorResponse>() {}.type
+                )
+            } catch (e: Exception) {
+                null
+            }
+            emit(Result.failure(Throwable(errorData?.message)))
+        }
+    }.catch {
+        val errorMessage = Throwable(it.message)
+        emit(Result.failure(errorMessage))
+    }.flowOn(Dispatchers.IO)
 
 
 }

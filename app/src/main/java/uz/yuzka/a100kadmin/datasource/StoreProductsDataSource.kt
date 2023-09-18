@@ -2,8 +2,8 @@ package uz.yuzka.a100kadmin.datasource
 
 import androidx.paging.PagingSource
 import uz.yuzka.a100kadmin.base.BasePagingDataSource
-import uz.yuzka.a100kadmin.network.MainApi
 import uz.yuzka.a100kadmin.data.response.ProductDto
+import uz.yuzka.a100kadmin.network.MainApi
 import javax.inject.Inject
 
 class StoreProductsDataSource @Inject constructor(
@@ -18,8 +18,7 @@ class StoreProductsDataSource @Inject constructor(
             handle {
                 api.getStoreProducts(
                     page = page,
-                    status = status,
-                    search = search
+                    category = category
                 )
             }
         } catch (e: Exception) {
@@ -29,16 +28,13 @@ class StoreProductsDataSource @Inject constructor(
 
 
     fun create(
-        status: String? = null,
-        search: String? = null
+        category: Int? = null
     ): PagingSource<Int, ProductDto> {
         return StoreProductsDataSource(api).apply {
-            this.status = status
-            this.search = search
+            this.category = category
         }
     }
 
-    private var status: String? = null
-    private var search: String? = null
+    private var category: Int? = null
 
 }

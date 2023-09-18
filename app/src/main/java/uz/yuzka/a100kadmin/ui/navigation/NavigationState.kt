@@ -11,11 +11,13 @@ class NavigationState(
 ) {
     fun navigateTo(route: String, isPopUpTo: Boolean = true) {
         navHostController.navigate(route) {
-            if (isPopUpTo) popUpTo(navHostController.graph.findStartDestination().id) {
-                saveState = true
+            if (isPopUpTo) {
+                popUpTo(navHostController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
             }
-            launchSingleTop = true
-            restoreState = true
         }
     }
 

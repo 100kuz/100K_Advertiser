@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,16 +41,14 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uz.yuzka.a100kadmin.R
 import uz.yuzka.a100kadmin.ui.theme.BackButton
 
-@Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SetDiscountBalance() {
+fun SetDiscountBalance(discount: MutableState<String>, onConfirm: (String) -> Unit) {
 
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(
@@ -66,7 +65,7 @@ fun SetDiscountBalance() {
             },
             navigationIcon = {
                 BackButton {
-                    //todo
+                    onConfirm(discount.value)
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
@@ -76,7 +75,7 @@ fun SetDiscountBalance() {
     }) { pad ->
 
         var sum by remember {
-            mutableStateOf("")
+            mutableStateOf(discount.value)
         }
 
         Box(
@@ -302,12 +301,12 @@ fun SetDiscountBalance() {
                 }
 
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = { onConfirm(sum) },
                     modifier = Modifier
                         .fillMaxWidth(),
                     shape = RectangleShape,
                     colors = ButtonDefaults.buttonColors(Color(0xFF51AEE7)),
-                    enabled = false
+                    enabled = true
                 ) {
                     Text(
                         text = "Tasdiqlash",

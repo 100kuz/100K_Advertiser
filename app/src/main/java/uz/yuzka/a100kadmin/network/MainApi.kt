@@ -2,11 +2,11 @@ package uz.yuzka.a100kadmin.network
 
 import retrofit2.Response
 import retrofit2.http.*
+import uz.yuzka.a100kadmin.data.request.CreateStreamRequest
 import uz.yuzka.a100kadmin.data.response.CategoriesResponse
 import uz.yuzka.a100kadmin.data.response.CharitiesResponse
 import uz.yuzka.a100kadmin.data.response.CreatePromoCodeRequest
 import uz.yuzka.a100kadmin.data.response.GetMeDto
-import uz.yuzka.a100kadmin.data.response.GetMoneyResponse
 import uz.yuzka.a100kadmin.data.response.MessageResponse
 import uz.yuzka.a100kadmin.data.response.NotificationsResponse
 import uz.yuzka.a100kadmin.data.response.ProductItemDto
@@ -15,15 +15,18 @@ import uz.yuzka.a100kadmin.data.response.PromoCodeData
 import uz.yuzka.a100kadmin.data.response.PromoCodeResponse
 import uz.yuzka.a100kadmin.data.response.SalesResponse
 import uz.yuzka.a100kadmin.data.response.StatisticsResponse
+import uz.yuzka.a100kadmin.data.response.StreamDto
+import uz.yuzka.a100kadmin.data.response.StreamsResponse
 import uz.yuzka.a100kadmin.data.response.TransactionsResponse
+import uz.yuzka.a100kadmin.data.response.WithdrawItemData
 import uz.yuzka.a100kadmin.data.response.WithdrawsResponse
-import uz.yuzka.seller.data.request.GetMoneyRequest
+import uz.yuzka.a100kadmin.data.request.GetMoneyRequest
 import uz.yuzka.seller.data.request.LogoutRequest
 import uz.yuzka.seller.data.request.SetDeviceTokenRequest
 
 interface MainApi {
 
-    @GET("profile")
+    @GET("advertiser/profile")
     suspend fun getMe(): Response<GetMeDto>
 
     @GET("advertiser/products/{id}")
@@ -44,23 +47,21 @@ interface MainApi {
 
     @GET("advertiser/products")
     suspend fun getStoreProducts(
-        @Query("status") status: String? = null,
         @Query("page") page: Int,
-        @Query("query") search: String? = null,
+        @Query("category_id") category: Int? = null,
     ): ProductsResponse
 
-    @GET("advertiser/{store_id}/withdraws")
+    @GET("advertiser/withdraws")
     suspend fun getWithdraws(
         @Query("page") page: Int
     ): WithdrawsResponse
 
-    @POST("advertiser/{store}/withdraws")
-    suspend fun getMoney(
-        @Path("store") id: Int,
+    @POST("advertiser/withdraws")
+    suspend fun createWithdraw(
         @Body body: GetMoneyRequest
-    ): Response<GetMoneyResponse>
+    ): Response<WithdrawItemData>
 
-    @GET("advertiser/{store}/statistics")
+    @GET("advertiser/statistics")
     suspend fun getStatistics(
         @Path("store") id: Int
     ): StatisticsResponse
@@ -102,5 +103,26 @@ interface MainApi {
     suspend fun getCharities(
         @Query("page") page: Int = 1
     ): CharitiesResponse
+
+    @GET("advertiser/streams/{id}")
+    suspend fun getStreamById(
+        @Path("id") id: Int
+    ): Response<StreamDto>
+
+    @GET("advertiser/streams")
+    suspend fun getStreams(
+        @Query("page") page: Int
+    ): StreamsResponse
+
+    @POST("advertiser/streams")
+    suspend fun createStreams(
+        @Body data: CreateStreamRequest
+    ): Response<StreamDto>
+
+    @POST("advertiser/withdraws/{id}/cancel")
+    suspend fun cancelWithdraw(
+        @Path("id") id: Int
+    ): Response<WithdrawItemData>
+
 
 }

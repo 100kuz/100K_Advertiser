@@ -21,9 +21,9 @@ fun MainNavigation(
     balanceHistoryContent: @Composable () -> Unit,
     charityHistoryContent: @Composable () -> Unit,
     userScreenContent: @Composable () -> Unit,
-    streamItemContent: @Composable () -> Unit,
+    streamItemContent: @Composable (Int) -> Unit,
     createPromoCodeContent: @Composable () -> Unit,
-    createStreamContent: @Composable () -> Unit,
+    createStreamContent: @Composable (Int) -> Unit,
 ) {
     NavHost(navController = navController, Screen.HomeContent.route) {
 
@@ -67,16 +67,31 @@ fun MainNavigation(
             userScreenContent()
         }
 
-        composable(Screen.StreamDetailedContent.route) {
-            streamItemContent()
+        composable(
+            Screen.StreamDetailedContent.route,
+            arguments = listOf(navArgument("id") {
+                type = NavType.IntType
+            })
+        ) {
+            val id = it.arguments?.getInt("id")
+            id?.let { streamItemContent(id) }
         }
 
         composable(Screen.CreatePromoCodeContent.route) {
             createPromoCodeContent()
         }
 
-        composable(Screen.CreateStreamContent.route) {
-            createStreamContent()
+        composable(
+            Screen.CreateStreamContent.route,
+            arguments = listOf(navArgument("id") {
+                type = NavType.IntType
+            })
+        ) {
+            val id = it.arguments?.getInt("id")
+
+            if (id != null) {
+                createStreamContent(id)
+            }
         }
 
     }
@@ -129,7 +144,12 @@ sealed class Screen(val route: String) {
     }
 
     object CreatePromoCodeContent : Screen(CREATE_PROMO_CODE_ROUTE)
-    object CreateStreamContent : Screen(CREATE_STREAM_ROUTE)
+    object CreateStreamContent : Screen(CREATE_STREAM_ROUTE) {
+        fun getRouteWithArgs(id: Int): String {
+            return "create_stream/$id"
+        }
+    }
+
     object AuthScreen : Screen(AUTH_ROUTE)
     object VerifyScreen : Screen(VERIFY_ROUTE) {
         fun getRouteWithArgs(phone: String): String {
@@ -150,7 +170,7 @@ sealed class Screen(val route: String) {
         const val USER_ROUTE = "user"
         const val STREAM_ROUTE = "streams/{id}"
         const val CREATE_PROMO_CODE_ROUTE = "create_promo_code"
-        const val CREATE_STREAM_ROUTE = "create_stream"
+        const val CREATE_STREAM_ROUTE = "create_stream/{id}"
         const val AUTH_ROUTE = "auth"
         const val VERIFY_ROUTE = "verify/{phone}"
     }

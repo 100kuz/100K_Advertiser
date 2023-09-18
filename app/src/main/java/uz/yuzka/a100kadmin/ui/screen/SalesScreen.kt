@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -48,6 +50,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import uz.yuzka.a100kadmin.R
@@ -250,7 +253,7 @@ fun AllSalesScreen(
                     selectedContentColor = Color(0xFF51AEE7),
                     unselectedContentColor = Color(0xFF9B9B9B)
                 ) {
-                    Text(text = "Bekor qilindi", fontSize = 15.sp)
+                    Text(text = "Arxiv", fontSize = 15.sp)
                 }
             }
 
@@ -267,6 +270,26 @@ fun AllSalesScreen(
                     it?.let { ord -> ItemSale(ord, onSaleClick) }
                 }
             }
+
+            if (orders.loadState.refresh is LoadState.NotLoading) {
+                if (orders.itemCount == 0) Box(
+                    modifier = Modifier
+                        .padding(top = 42.dp)
+                        .fillMaxSize()
+                        .verticalScroll(
+                            rememberScrollState()
+                        )
+                ) {
+                    Text(
+                        text = "Buyurtmalar mavjud emas...",
+                        color = Color.Black,
+                        fontFamily = FontFamily(Font(R.font.roboto_medium)),
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 20.sp, modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+            }
+
 
             PullRefreshIndicator(
                 refreshing = progress,
@@ -559,7 +582,7 @@ fun ItemSale(data: OrderItem, onSaleClick: (Int) -> Unit) {
                 .clickable(interactionSource = remember {
                     MutableInteractionSource()
                 }, indication = rememberRipple()) {
-                    onSaleClick.invoke(1)
+                    data.stream_id?.let { onSaleClick.invoke(it) }
                 }
                 .padding(
                     vertical = 8.dp
@@ -579,7 +602,7 @@ fun ItemSale(data: OrderItem, onSaleClick: (Int) -> Unit) {
                 )
 
                 Text(
-                    text = data.stream_name ?: "${data.stream_id}-oqim",
+                    text = data.stream_name ?: "${data.stream_id ?: "?"}-oqim",
                     style = TextStyle(
                         fontSize = 15.sp,
                         lineHeight = 18.sp,

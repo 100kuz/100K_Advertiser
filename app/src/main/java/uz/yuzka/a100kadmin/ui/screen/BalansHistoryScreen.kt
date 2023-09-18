@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -42,6 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import uz.yuzka.a100kadmin.R
@@ -125,7 +128,45 @@ fun BalanceHistoryScreen(
                     it?.let { dto -> ItemBalanceHistory(dto) }
                 }
 
+                if (transactions.loadState.refresh is LoadState.NotLoading && transactions.itemCount == 0) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(
+                                    rememberScrollState()
+                                )
+                        ) {
+                            Text(
+                                text = "Ma'lumot mavjud emas...",
+                                color = Color.Black,
+                                fontFamily = FontFamily(Font(R.font.roboto_medium)),
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 20.sp, modifier = Modifier.align(Alignment.Center)
+                            )
+                        }
+                    }
+                }
             }
+
+            if (transactions.loadState.refresh is LoadState.NotLoading) {
+                if (transactions.itemCount == 0) Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(
+                            rememberScrollState()
+                        )
+                ) {
+                    Text(
+                        text = "Ma'lumot mavjud emas...",
+                        color = Color.Black,
+                        fontFamily = FontFamily(Font(R.font.roboto_medium)),
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 20.sp, modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+            }
+
 
             PullRefreshIndicator(
                 refreshing = progress,
