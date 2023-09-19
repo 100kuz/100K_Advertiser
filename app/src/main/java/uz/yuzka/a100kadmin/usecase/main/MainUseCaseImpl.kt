@@ -2,7 +2,9 @@ package uz.yuzka.a100kadmin.usecase.main
 
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
+import uz.yuzka.a100kadmin.base.SaleStatus
 import uz.yuzka.a100kadmin.data.request.CreateStreamRequest
+import uz.yuzka.a100kadmin.data.request.GetMoneyRequest
 import uz.yuzka.a100kadmin.data.response.BalanceResponse
 import uz.yuzka.a100kadmin.data.response.CategoryDto
 import uz.yuzka.a100kadmin.data.response.CharityItem
@@ -21,7 +23,6 @@ import uz.yuzka.a100kadmin.data.response.TransactionItem
 import uz.yuzka.a100kadmin.data.response.WithdrawItemData
 import uz.yuzka.a100kadmin.data.response.WithdrawsDto
 import uz.yuzka.a100kadmin.repository.main.MainRepository
-import uz.yuzka.a100kadmin.data.request.GetMoneyRequest
 import uz.yuzka.seller.data.request.LogoutRequest
 import uz.yuzka.seller.data.request.SetDeviceTokenRequest
 import javax.inject.Inject
@@ -65,9 +66,8 @@ class MainUseCaseImpl @Inject constructor(private val repository: MainRepository
         category: Int?
     ): Flow<PagingData<ProductDto>> = repository.getStoreProducts(category)
 
-    override suspend fun getStatistics(
-        store: Int
-    ): Flow<Result<StatisticsDto>> = repository.getStatistics(store)
+    override suspend fun getStatistics(status: SaleStatus?): Flow<PagingData<StatisticsDto>> =
+        repository.getStatistics(status)
 
     override suspend fun getBalanceStatistics(
         id: Int

@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
@@ -74,8 +75,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
 
+        setContent {
             val navigationState = rememberNavigationState()
             val destination by navigationState.navHostController.currentBackStackEntryAsState()
             val visible = bottomDestinations.contains(destination?.destination?.route)
@@ -85,8 +86,14 @@ class MainActivity : ComponentActivity() {
                 bottomBar = {
                     AnimatedVisibility(
                         visible = visible,
-                        enter = slideInVertically(initialOffsetY = { it }),
-                        exit = slideOutVertically(targetOffsetY = { it })
+                        enter = slideInVertically(
+                            initialOffsetY = { it },
+                            animationSpec = tween(400)
+                        ),
+                        exit = slideOutVertically(
+                            targetOffsetY = { it },
+                            animationSpec = tween(10)
+                        )
                     ) {
                         Box(modifier = Modifier.fillMaxWidth()) {
 
@@ -270,7 +277,15 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         },
-                        transactionsContent = { TransactionsScreen(withdrawsViewModel) },
+                        transactionsContent = {
+                            TransactionsScreen(withdrawsViewModel,
+                                onUserClick = {
+                                    navigationState.navigateTo(
+                                        Screen.UserContent.route,
+                                        false
+                                    )
+                                })
+                        },
                         streamsContent = {
                             AllStreamsContent(
                                 mainViewModel = mainViewModel,
@@ -279,6 +294,12 @@ class MainActivity : ComponentActivity() {
                                         Screen.StreamDetailedContent.getRouteWithArgs(
                                             id
                                         ),
+                                        false
+                                    )
+                                },
+                                onUserClick = {
+                                    navigationState.navigateTo(
+                                        Screen.UserContent.route,
                                         false
                                     )
                                 }
@@ -293,11 +314,24 @@ class MainActivity : ComponentActivity() {
                                         Screen.CreateStreamContent.getRouteWithArgs(it.id),
                                         false
                                     )
+                                },
+                                onUserClick = {
+                                    navigationState.navigateTo(
+                                        Screen.UserContent.route,
+                                        false
+                                    )
                                 }
                             )
                         },
                         statisticsContent = {
-                            StatisticsScreen()
+                            StatisticsScreen(
+                                onUserClick = {
+                                    navigationState.navigateTo(
+                                        Screen.UserContent.route,
+                                        false
+                                    )
+                                }
+                            )
                         },
                         promoCodesContent = {
                             AllPromoCodeScreen(

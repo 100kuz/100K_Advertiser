@@ -26,6 +26,7 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -64,7 +65,8 @@ import uz.yuzka.a100kadmin.utils.formatToPrice
 @Composable
 fun AllStreamsContent(
     mainViewModel: MainViewModel = hiltViewModel<MainViewModelImpl>(),
-    onStreamClick: (Int) -> Unit
+    onStreamClick: (Int) -> Unit,
+    onUserClick: () -> Unit
 ) {
 
     val hasLoadedStreams by mainViewModel.hasLoadedStreams.observeAsState(initial = false)
@@ -101,7 +103,19 @@ fun AllStreamsContent(
             },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = Color.White
-            ), modifier = Modifier.shadow(2.dp)
+            ), modifier = Modifier.shadow(2.dp),
+            navigationIcon = {
+                IconButton(onClick = {
+                    onUserClick()
+                }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_user),
+                        contentDescription = null,
+                        tint = Color.Black,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
         )
     }) { pad ->
 

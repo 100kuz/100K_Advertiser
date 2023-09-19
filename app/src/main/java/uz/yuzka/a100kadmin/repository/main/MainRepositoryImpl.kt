@@ -11,7 +11,9 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import uz.yuzka.a100kadmin.base.BaseErrorResponse
+import uz.yuzka.a100kadmin.base.SaleStatus
 import uz.yuzka.a100kadmin.data.request.CreateStreamRequest
+import uz.yuzka.a100kadmin.data.request.GetMoneyRequest
 import uz.yuzka.a100kadmin.data.response.BalanceResponse
 import uz.yuzka.a100kadmin.data.response.CategoryDto
 import uz.yuzka.a100kadmin.data.response.CharityItem
@@ -35,13 +37,13 @@ import uz.yuzka.a100kadmin.datasource.CategoriesDataSource
 import uz.yuzka.a100kadmin.datasource.CharitiesDataSource
 import uz.yuzka.a100kadmin.datasource.NotificationsDataSource
 import uz.yuzka.a100kadmin.datasource.PromoCodesDataSource
+import uz.yuzka.a100kadmin.datasource.StatisticsDataSource
 import uz.yuzka.a100kadmin.datasource.StoreProductsDataSource
 import uz.yuzka.a100kadmin.datasource.StreamsDataSource
 import uz.yuzka.a100kadmin.datasource.TransactionsDataSource
 import uz.yuzka.a100kadmin.datasource.WithdrawsDataSource
 import uz.yuzka.a100kadmin.network.MainApi
 import uz.yuzka.a100kadmin.pref.MyPref
-import uz.yuzka.a100kadmin.data.request.GetMoneyRequest
 import uz.yuzka.seller.data.request.LogoutRequest
 import uz.yuzka.seller.data.request.SetDeviceTokenRequest
 import javax.inject.Inject
@@ -185,28 +187,20 @@ class MainRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getStatistics(
-        id: Int
-    ): Flow<Result<StatisticsDto>> = flow {
-        val response = api.getStatistics(id)
-
-        if (response.isSuccessful) {
-            emit(Result.success(response.body()!!))
-        } else {
-            val errorData: BaseErrorResponse? = try {
-                Gson().fromJson<BaseErrorResponse?>(
-                    response.errorBody()?.string(),
-                    object : TypeToken<BaseErrorResponse>() {}.type
-                )
-            } catch (e: Exception) {
-                null
-            }
-            emit(Result.failure(Throwable(errorData?.message)))
+    override suspend fun getStatistics(status: SaleStatus?): Flow<PagingData<StatisticsDto>> {
+        return try {
+            Pager(
+                config = PagingConfig(
+                    pageSize = 4
+                ),
+                pagingSourceFactory = {
+                    StatisticsDataSource(api).create(status)
+                }, initialKey = 1
+            ).flow
+        } catch (_: Exception) {
+            flow { PagingData.empty<StatisticsDto>() }
         }
-    }.catch {
-        val errorMessage = Throwable("Server bilan muammo bo'ldi")
-        emit(Result.failure(errorMessage))
-    }.flowOn(Dispatchers.IO)
+    }
 
     override suspend fun getBalanceStatistics(
         id: Int

@@ -3,6 +3,7 @@ package uz.yuzka.a100kadmin.network
 import retrofit2.Response
 import retrofit2.http.*
 import uz.yuzka.a100kadmin.data.request.CreateStreamRequest
+import uz.yuzka.a100kadmin.data.request.GetMoneyRequest
 import uz.yuzka.a100kadmin.data.response.CategoriesResponse
 import uz.yuzka.a100kadmin.data.response.CharitiesResponse
 import uz.yuzka.a100kadmin.data.response.CreatePromoCodeRequest
@@ -20,7 +21,6 @@ import uz.yuzka.a100kadmin.data.response.StreamsResponse
 import uz.yuzka.a100kadmin.data.response.TransactionsResponse
 import uz.yuzka.a100kadmin.data.response.WithdrawItemData
 import uz.yuzka.a100kadmin.data.response.WithdrawsResponse
-import uz.yuzka.a100kadmin.data.request.GetMoneyRequest
 import uz.yuzka.seller.data.request.LogoutRequest
 import uz.yuzka.seller.data.request.SetDeviceTokenRequest
 
@@ -61,9 +61,10 @@ interface MainApi {
         @Body body: GetMoneyRequest
     ): Response<WithdrawItemData>
 
-    @GET("advertiser/statistics")
+    @GET("advertiser/streams/statistics")
     suspend fun getStatistics(
-        @Path("store") id: Int
+        @Query("page") page: Int = 1,
+        @Query("status") status: String?
     ): StatisticsResponse
 
     @POST("passport/logout")

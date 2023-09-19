@@ -32,6 +32,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -79,7 +80,8 @@ import uz.yuzka.a100kadmin.utils.formatToPrice
 @Composable
 @ExperimentalMaterial3Api
 fun TransactionsScreen(
-    viewModel: WithdrawsViewModel = hiltViewModel<WithdrawsViewModelImpl>()
+    viewModel: WithdrawsViewModel = hiltViewModel<WithdrawsViewModelImpl>(),
+    onUserClick: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -174,7 +176,19 @@ fun TransactionsScreen(
             },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = Color.White
-            ), modifier = Modifier.shadow(2.dp)
+            ), modifier = Modifier.shadow(2.dp),
+            navigationIcon = {
+                IconButton(onClick = {
+                    onUserClick()
+                }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_user),
+                        contentDescription = null,
+                        tint = Color.Black,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
         )
     }) { pad ->
 
