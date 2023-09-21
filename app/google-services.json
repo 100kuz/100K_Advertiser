@@ -1,0 +1,215 @@
+{
+  "project_info": {
+    "project_number": "534519212004",
+    "firebase_url": "https://kuz-79fb2.firebaseio.com",
+    "project_id": "kuz-79fb2",
+    "storage_bucket": "kuz-79fb2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:534519212004:android:92e442dd434d1bf8b289f1",
+        "android_client_info": {
+          "package_name": "uz.yuzka.admin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "534519212004-7ipn3695r0bvuu41v8c133u7012somb5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1hJarZ_jjmr_YlePHLAOA8QOSljXaQAE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "534519212004-7ipn3695r0bvuu41v8c133u7012somb5.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "534519212004-65c6renoouq62f0j4n01tim2dmtegt6j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "yuzka.admin"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:534519212004:android:aee1181b0c54e4beb289f1",
+        "android_client_info": {
+          "package_name": "uz.yuzka.express"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "534519212004-p0thil1ngfg3cq0js97e86vpnoe803r8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "uz.yuzka.express",
+            "certificate_hash": "7848d06c358afa586e26c851325713827f967a8c"
+          }
+        },
+        {
+          "client_id": "534519212004-7ipn3695r0bvuu41v8c133u7012somb5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1hJarZ_jjmr_YlePHLAOA8QOSljXaQAE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "534519212004-7ipn3695r0bvuu41v8c133u7012somb5.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "534519212004-65c6renoouq62f0j4n01tim2dmtegt6j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "yuzka.admin"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:534519212004:android:996eacf5776f15ecb289f1",
+        "android_client_info": {
+          "package_name": "uz.yuzka.expresskuryer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "534519212004-7ipn3695r0bvuu41v8c133u7012somb5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1hJarZ_jjmr_YlePHLAOA8QOSljXaQAE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "534519212004-7ipn3695r0bvuu41v8c133u7012somb5.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "534519212004-65c6renoouq62f0j4n01tim2dmtegt6j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "yuzka.admin"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:534519212004:android:61d1971027ddad07b289f1",
+        "android_client_info": {
+          "package_name": "uz.yuzka.seller"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "534519212004-tpvmb9ajnapp8n4emeq77tn4vk3m8tks.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "uz.yuzka.seller",
+            "certificate_hash": "d1ed88a163b425beb0a17bd21619b8e8712e67a7"
+          }
+        },
+        {
+          "client_id": "534519212004-7ipn3695r0bvuu41v8c133u7012somb5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1hJarZ_jjmr_YlePHLAOA8QOSljXaQAE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "534519212004-7ipn3695r0bvuu41v8c133u7012somb5.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "534519212004-65c6renoouq62f0j4n01tim2dmtegt6j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "yuzka.admin"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:534519212004:android:8579b67df0ee6849b289f1",
+        "android_client_info": {
+          "package_name": "uz.yuzka.shop100k"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "534519212004-qnal6ehq0cu8mra186p34jghpq2lid0d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "uz.yuzka.shop100k",
+            "certificate_hash": "7e0fc9b497dbe61329d73339134489c8ef0fff0a"
+          }
+        },
+        {
+          "client_id": "534519212004-7ipn3695r0bvuu41v8c133u7012somb5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1hJarZ_jjmr_YlePHLAOA8QOSljXaQAE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "534519212004-7ipn3695r0bvuu41v8c133u7012somb5.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "534519212004-65c6renoouq62f0j4n01tim2dmtegt6j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "yuzka.admin"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
