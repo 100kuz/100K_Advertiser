@@ -20,6 +20,7 @@ import uz.yuzka.admin.data.request.SetDeviceTokenRequest
 import uz.yuzka.admin.data.response.BalanceResponse
 import uz.yuzka.admin.data.response.CategoryDto
 import uz.yuzka.admin.data.response.CharityItem
+import uz.yuzka.admin.data.response.ChartItem
 import uz.yuzka.admin.data.response.CreatePromoCodeRequest
 import uz.yuzka.admin.data.response.GetMeDto
 import uz.yuzka.admin.data.response.MessageResponse
@@ -505,6 +506,50 @@ class MainRepositoryImpl @Inject constructor(
 
     override fun deleteStream(id: Int): Flow<Result<MessageResponse>> = flow {
         val response = api.deleteStream(id)
+
+        if (response.isSuccessful) {
+            emit(Result.success(response.body()!!))
+        } else {
+            val errorData: BaseErrorResponse? = try {
+                Gson().fromJson<BaseErrorResponse?>(
+                    response.errorBody()?.string(),
+                    object : TypeToken<BaseErrorResponse>() {}.type
+                )
+            } catch (e: Exception) {
+                null
+            }
+            emit(Result.failure(Throwable(errorData?.message)))
+        }
+    }.catch {
+        val errorMessage = Throwable(it.message)
+        emit(Result.failure(errorMessage))
+    }.flowOn(Dispatchers.IO)
+
+
+    override fun getTransactionStats(): Flow<Result<List<ChartItem>>> = flow {
+        val response = api.getTransactionStatistics()
+
+        if (response.isSuccessful) {
+            emit(Result.success(response.body()!!))
+        } else {
+            val errorData: BaseErrorResponse? = try {
+                Gson().fromJson<BaseErrorResponse?>(
+                    response.errorBody()?.string(),
+                    object : TypeToken<BaseErrorResponse>() {}.type
+                )
+            } catch (e: Exception) {
+                null
+            }
+            emit(Result.failure(Throwable(errorData?.message)))
+        }
+    }.catch {
+        val errorMessage = Throwable(it.message)
+        emit(Result.failure(errorMessage))
+    }.flowOn(Dispatchers.IO)
+
+
+    override fun generatePost(id: Int): Flow<Result<MessageResponse>> = flow {
+        val response = api.generatePost(id)
 
         if (response.isSuccessful) {
             emit(Result.success(response.body()!!))

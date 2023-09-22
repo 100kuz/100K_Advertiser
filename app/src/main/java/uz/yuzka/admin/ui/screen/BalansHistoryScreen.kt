@@ -12,9 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -63,8 +61,10 @@ fun BalanceHistoryScreen(
 ) {
 
     val transactions = viewModel.transactions.collectAsLazyPagingItems()
+    val chartFlow by viewModel.chartFlow.collectAsState(listOf())
 
     val hasLoaded by viewModel.hasLoadedTransactions.observeAsState(false)
+    val hasLoadedChart by viewModel.hasLoadedChart.observeAsState(false)
 
     val progress by viewModel.progressFlow.collectAsState(initial = false)
 
@@ -74,10 +74,19 @@ fun BalanceHistoryScreen(
         }
     }
 
+    LaunchedEffect(key1 = null) {
+        if (!hasLoadedChart) {
+            viewModel.getChartStats()
+        }
+    }
+
     val pullRefreshState =
         rememberPullRefreshState(
             refreshing = progress,
-            onRefresh = { transactions.refresh() })
+            onRefresh = {
+                transactions.refresh()
+                viewModel.getChartStats()
+            })
 
 
 
@@ -118,7 +127,21 @@ fun BalanceHistoryScreen(
                 contentPadding = PaddingValues(bottom = 20.dp)
             ) {
                 item {
-                    BalanceChart(modifier = Modifier.fillMaxWidth())
+                    BalanceChart(
+                        modifier = Modifier.fillMaxWidth(),
+                        chartFlow
+//                        listOf(
+//                            ChartItem("12",12,15),
+//                            ChartItem("13",11,16),
+//                            ChartItem("14",10,18),
+//                            ChartItem("15",9,17),
+//                            ChartItem("16",5,10),
+//                            ChartItem("17",10,9),
+//                            ChartItem("18",12,3),
+//                            ChartItem("19",11,15),
+//                            ChartItem("20",10,20),
+//                        )
+                    )
                 }
 
                 items(transactions, key = {
@@ -128,26 +151,26 @@ fun BalanceHistoryScreen(
                     it?.let { dto -> ItemBalanceHistory(dto) }
                 }
 
-            }
-
-
-            if (transactions.loadState.refresh is LoadState.NotLoading && transactions.itemCount == 0 || transactions.loadState.refresh is LoadState.Error) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(
-                            rememberScrollState()
-                        )
-                ) {
-                    Text(
-                        text = "Ma'lumot mavjud emas...",
-                        color = Color.Black,
-                        fontFamily = FontFamily(Font(R.font.roboto_medium)),
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 20.sp, modifier = Modifier.align(Alignment.Center)
-                    )
+                if (transactions.loadState.refresh is LoadState.NotLoading && transactions.itemCount == 0 || transactions.loadState.refresh is LoadState.Error) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .padding(top = 40.dp)
+                                .fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Ma'lumot mavjud emas...",
+                                color = Color.Black,
+                                fontFamily = FontFamily(Font(R.font.roboto_medium)),
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 20.sp, modifier = Modifier.align(Alignment.Center)
+                            )
+                        }
+                    }
                 }
+
             }
+
 
             PullRefreshIndicator(
                 refreshing = progress,

@@ -11,7 +11,6 @@ import uz.yuzka.admin.data.response.ProductDto
 import uz.yuzka.admin.data.response.RegionDto
 import uz.yuzka.admin.data.response.StreamDetailedDto
 import uz.yuzka.admin.data.response.StreamDto
-import uz.yuzka.seller.data.request.LogoutRequest
 
 interface MainViewModel {
 
@@ -63,6 +62,8 @@ interface MainViewModel {
     fun setScroll(x: Int, y: Int)
 
     fun getStreamById(id: Int)
+
+    fun generatePost(id: Int)
 
     fun getAllStreams()
 

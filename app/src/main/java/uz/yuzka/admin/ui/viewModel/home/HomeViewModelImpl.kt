@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import uz.yuzka.admin.base.SaleStatus
 import uz.yuzka.admin.data.response.CharityItem
+import uz.yuzka.admin.data.response.ChartItem
 import uz.yuzka.admin.data.response.GetMeDto
 import uz.yuzka.admin.data.response.OrderItem
 import uz.yuzka.admin.data.response.PromoCodeItem
@@ -34,12 +35,14 @@ class HomeViewModelImpl @Inject constructor(
     override val charities = eventValueFlow<PagingData<CharityItem>>()
     override val promoCodes = eventValueFlow<PagingData<PromoCodeItem>>()
     override val getMeData = eventValueFlow<GetMeDto>()
+    override val chartFlow = eventValueFlow<List<ChartItem>>()
 
     override val hasLoadedPromoCodes = MutableLiveData(false)
     override val hasLoadedTransactions = MutableLiveData(false)
     override val hasLoadedCharities = MutableLiveData(false)
     override val hasLoadedOrders = MutableLiveData(false)
     override val hasLoadedGetMe = MutableLiveData(false)
+    override val hasLoadedChart = MutableLiveData(false)
 
 
     override fun selectOrderStatus(status: SaleStatus) {
@@ -119,6 +122,26 @@ class HomeViewModelImpl @Inject constructor(
                 it.onSuccess { res ->
                     hasLoadedGetMe.value = true
                     res?.let { dto -> getMeData.emit(dto) }
+                }
+            }.launchIn(viewModelScope)
+            delay(1000)
+            getMeProgressFlow.emit(false)
+        }
+    }
+
+    override fun getChartStats() {
+        if (!isConnected()) {
+            return
+        }
+        viewModelScope.launch {
+            getMeProgressFlow.emit(true)
+            useCase.getTransactionStats().onEach {
+                hasLoadedChart.value = true
+                it.onSuccess { res ->
+                    chartFlow.emit(res)
+                }
+                it.onFailure {
+                    chartFlow.emit(listOf())
                 }
             }.launchIn(viewModelScope)
             delay(1000)

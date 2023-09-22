@@ -491,17 +491,7 @@ fun StreamDetailedScreen(
 
                             Button(
                                 onClick = {
-                                    clipboardManager.setPrimaryClip(
-                                        ClipData.newPlainText(
-                                            "",
-                                            data?.link
-                                        )
-                                    )
-                                    Toast.makeText(
-                                        context,
-                                        "Manzil nusha qilindi!",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    data?.product_id?.let { viewModel.generatePost(it) }
                                 },
                                 modifier = Modifier
                                     .weight(1f),

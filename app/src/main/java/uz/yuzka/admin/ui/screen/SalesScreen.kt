@@ -340,7 +340,7 @@ fun ItemSale(data: OrderItem, onSaleClick: (Int) -> Unit) {
                         )
                     )
                     Text(
-                        text = data.created_at,
+                        text = data.created_at_label,
                         style = TextStyle(
                             fontSize = 12.sp,
                             fontFamily = FontFamily(Font(R.font.roboto_regular)),
@@ -416,7 +416,7 @@ fun ItemSale(data: OrderItem, onSaleClick: (Int) -> Unit) {
                 )
 
                 Text(
-                    text = data.note ?: data.cancel_reason ?: "",
+                    text = data.note ?: data.cancel_reason ?: "---",
                     style = TextStyle(
                         fontSize = 15.sp,
                         fontFamily = FontFamily(Font(R.font.roboto_regular)),

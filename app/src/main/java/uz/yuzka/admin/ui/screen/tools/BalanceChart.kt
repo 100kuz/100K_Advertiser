@@ -18,17 +18,21 @@ import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uz.yuzka.admin.R
+import uz.yuzka.admin.data.response.ChartItem
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -36,20 +40,8 @@ import kotlin.math.max
 @OptIn(ExperimentalTextApi::class)
 @Composable
 fun BalanceChart(
-    list: List<Pair<Int, Int>> = listOf(
-        Pair(1, 10),
-        Pair(2, 20),
-        Pair(3, 30),
-        Pair(4, 40),
-        Pair(5, 50),
-        Pair(6, 50),
-        Pair(7, 40),
-        Pair(8, 30),
-        Pair(9, 20),
-        Pair(10, 10),
-        Pair(12, 80)
-    ),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    list: List<ChartItem> = listOf(),
 ) {
 
     Column(
@@ -102,72 +94,125 @@ fun BalanceChart(
                 .padding(bottom = 10.dp)
         ) {
 
-            var maxY = Int.MIN_VALUE
-            list.forEach {
-                maxY = max(maxY, it.second)
-                it.second
-            }
+            if (list.isNotEmpty()) {
+                val ordinates = mutableSetOf<Int>()
+                var maxY = Int.MIN_VALUE
+                list.forEach {
+                    maxY = max(maxY, max(it.plus, it.minus))
+                    ordinates.add(it.plus)
+                    ordinates.add(it.minus)
+                }
 
-            val spacePerDay = (size.width - 13 - 13f * list.size) / (list.size)
+                var maxYLen = 0
 
-            for (i in list.indices) {
-                val y1 = list[i].second
-                drawText(
-                    textMeasurer,
-                    y1.formatToKilos(),
-                    Offset(0f, size.height * (1f - 1F * y1 / maxY) - 45f),
-                    ordinatesTextStyle
-                )
-            }
+                ordinates.forEach { y1 ->
 
-            for (i in list.indices) {
-                val x1 = 60.sp.value + (i) * (spacePerDay) + i * 13f
-
-                drawText(
-                    textMeasurer,
-                    list[i].first.toString(),
-                    Offset(x1, size.height - 45f),
-                    ordinatesTextStyle
-                )
-
-            }
-
-            val cornerRadius = CornerRadius(25f, 25f)
-
-            for (i in list.indices) {
-
-                val coor = list[i]
-                val x1 = (i + 1) * (spacePerDay) + i * 13f
-
-                val path = Path()
-                path.addRoundRect(
-                    RoundRect(
-                        rect = Rect(
-                            offset = Offset(
-                                x1 - spacePerDay / 2,
-                                size.height * (1f - (1f * coor.second / maxY)) - 29f
-                            ),
-                            size = Size(
-                                spacePerDay / 1f,
-                                1F * size.height * (1F * coor.second / maxY) - 13f
-                            ),
-                        ),
-                        topLeft = cornerRadius,
-                        topRight = cornerRadius
+                    maxYLen = max(
+                        maxYLen,
+                        textMeasurer.measure(y1.toString(), ordinatesTextStyle).size.width
                     )
+                    drawText(
+                        textMeasurer,
+                        y1.formatToKilos(),
+                        Offset(0f, size.height * (1f - 1F * y1 / maxY) - 45f),
+                        ordinatesTextStyle
+                    )
+
+                }
+
+                val spacePerDay = (size.width - maxYLen) / list.size
+
+                for (i in list.indices) {
+                    val x1 = list[i].date
+                    val cor = maxYLen + spacePerDay / 2f + i * spacePerDay
+
+                    drawText(
+                        textMeasurer,
+                        x1.takeLast(2),
+                        Offset(
+                            1f * cor, size.height - 35
+                        ),
+                        ordinatesTextStyle
+
+                    )
+                }
+
+                val cornerRadius = CornerRadius(25f, 25f)
+
+                for (i in list.indices) {
+
+                    val cor = list[i]
+                    val x1 = maxYLen + spacePerDay / 2f + i * spacePerDay
+
+                    val path = Path()
+                    path.addRoundRect(
+                        RoundRect(
+                            rect = Rect(
+                                offset = Offset(
+                                    x1 - spacePerDay / 4,
+                                    size.height * (1f - (1f * cor.plus / maxY)) - 29f
+                                ),
+                                size = Size(
+                                    max(spacePerDay * 0.9f, 5f),
+                                    1F * size.height * (1F * cor.plus / maxY)
+                                ),
+                            ),
+                            topLeft = cornerRadius,
+                            topRight = cornerRadius
+                        )
+                    )
+
+                    drawPath(path, Color(0x9951AEE7))
+                    path.reset()
+                    path.addRoundRect(
+                        RoundRect(
+                            rect = Rect(
+                                offset = Offset(
+                                    x1 - spacePerDay / 4,
+                                    size.height * (1f - (1f * cor.minus / maxY)) - 29f
+                                ),
+                                size = Size(
+                                    max(spacePerDay * 0.9f, 5f),
+                                    1F * size.height * (1F * cor.minus / maxY)
+                                ),
+                            ),
+                            topLeft = cornerRadius,
+                            topRight = cornerRadius
+                        )
+                    )
+
+                    drawPath(path, Color(0x99ED5974))
+                }
+
+            } else {
+
+                val textStyle = TextStyle(
+                    color = Color(0xFF000000),
+                    fontSize = 14.sp,
+                    fontFamily = FontFamily(Font(R.font.roboto_regular)),
+                    letterSpacing = 0.sp,
+                    textAlign = TextAlign.Center
                 )
-
-                drawPath(path, if (i % 2 == 0) Color(0xFF51AEE7) else Color(0xFFED5974))
+                val textLayoutResult: TextLayoutResult =
+                    textMeasurer.measure(text = AnnotatedString("Grafik chizish ilojsiz..."))
+                val textSize = textLayoutResult.size
+                drawText(
+                    textMeasurer,
+                    "Grafik chizish ilojsiz...",
+                    Offset(
+                        (size.width - textSize.width) / 2f,
+                        (size.height - textSize.height) / 2f
+                    ),
+                    textStyle
+                )
             }
-
         }
-
     }
 }
 
 fun Int.formatToKilos(): String {
     return if (abs(this) < 1000) return this.toString()
-    else if (abs(this) < 1000000) return "${this / 1000}K"
-    else if (abs(this) < 1000000000) "${this / 1000000}M"
-    else "${this / 1000000000}B"
+    else if (abs(this) < 1000000) return "${(1F * this / 1000).toString().take(5)}K"
+    else if (abs(this) < 1000000000) "${(1F * this / 1000000).toString().take(5)} M"
+    else "${(1F * this / 1000000000).toString().take(5)}B"
 }

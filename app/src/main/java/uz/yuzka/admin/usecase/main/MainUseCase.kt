@@ -9,6 +9,7 @@ import uz.yuzka.admin.data.request.SetDeviceTokenRequest
 import uz.yuzka.admin.data.response.BalanceResponse
 import uz.yuzka.admin.data.response.CategoryDto
 import uz.yuzka.admin.data.response.CharityItem
+import uz.yuzka.admin.data.response.ChartItem
 import uz.yuzka.admin.data.response.GetMeDto
 import uz.yuzka.admin.data.response.MessageResponse
 import uz.yuzka.admin.data.response.NotificationDto
@@ -24,7 +25,6 @@ import uz.yuzka.admin.data.response.StreamDto
 import uz.yuzka.admin.data.response.TransactionItem
 import uz.yuzka.admin.data.response.WithdrawItemData
 import uz.yuzka.admin.data.response.WithdrawsDto
-import uz.yuzka.seller.data.request.LogoutRequest
 
 interface MainUseCase {
     suspend fun getMe(): Flow<Result<GetMeDto?>>
@@ -89,4 +89,8 @@ interface MainUseCase {
     ): Flow<Result<GetMeDto>>
 
     fun deleteStream(id: Int): Flow<Result<MessageResponse>>
+
+    fun getTransactionStats(): Flow<Result<List<ChartItem>>>
+
+    fun generatePost(id: Int): Flow<Result<MessageResponse>>
 }

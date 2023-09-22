@@ -9,6 +9,7 @@ import uz.yuzka.admin.data.request.SetDeviceTokenRequest
 import uz.yuzka.admin.data.response.BalanceResponse
 import uz.yuzka.admin.data.response.CategoryDto
 import uz.yuzka.admin.data.response.CharityItem
+import uz.yuzka.admin.data.response.ChartItem
 import uz.yuzka.admin.data.response.GetMeDto
 import uz.yuzka.admin.data.response.MessageResponse
 import uz.yuzka.admin.data.response.NotificationDto
@@ -91,5 +92,9 @@ interface MainRepository {
     ): Flow<Result<GetMeDto>>
 
     fun deleteStream(id: Int): Flow<Result<MessageResponse>>
+
+    fun getTransactionStats(): Flow<Result<List<ChartItem>>>
+
+    fun generatePost(id: Int): Flow<Result<MessageResponse>>
 
 }

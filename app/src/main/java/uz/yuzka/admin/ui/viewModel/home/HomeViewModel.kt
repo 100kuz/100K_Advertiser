@@ -5,6 +5,7 @@ import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
 import uz.yuzka.admin.base.SaleStatus
 import uz.yuzka.admin.data.response.CharityItem
+import uz.yuzka.admin.data.response.ChartItem
 import uz.yuzka.admin.data.response.GetMeDto
 import uz.yuzka.admin.data.response.OrderItem
 import uz.yuzka.admin.data.response.PromoCodeItem
@@ -21,12 +22,14 @@ interface HomeViewModel {
     val charities: Flow<PagingData<CharityItem>>
     val promoCodes: Flow<PagingData<PromoCodeItem>>
     val getMeData: Flow<GetMeDto>
+    val chartFlow: Flow<List<ChartItem>>
 
     val hasLoadedPromoCodes: LiveData<Boolean>
     val hasLoadedTransactions: LiveData<Boolean>
     val hasLoadedCharities: LiveData<Boolean>
     val hasLoadedOrders: LiveData<Boolean>
     val hasLoadedGetMe: LiveData<Boolean>
+    val hasLoadedChart: LiveData<Boolean>
 
     fun selectOrderStatus(status: SaleStatus)
 
@@ -43,5 +46,7 @@ interface HomeViewModel {
     fun getMeFromLocal()
 
     fun getMe()
+
+    fun getChartStats()
 
 }

@@ -9,6 +9,7 @@ import uz.yuzka.admin.data.request.SetDeviceTokenRequest
 import uz.yuzka.admin.data.response.BalanceResponse
 import uz.yuzka.admin.data.response.CategoryDto
 import uz.yuzka.admin.data.response.CharityItem
+import uz.yuzka.admin.data.response.ChartItem
 import uz.yuzka.admin.data.response.GetMeDto
 import uz.yuzka.admin.data.response.MessageResponse
 import uz.yuzka.admin.data.response.NotificationDto
@@ -116,4 +117,9 @@ class MainUseCaseImpl @Inject constructor(
     ): Flow<Result<GetMeDto>> = repository.updateUser(name, surname, regionId, districtId, address)
 
     override fun deleteStream(id: Int): Flow<Result<MessageResponse>> = repository.deleteStream(id)
+
+    override fun getTransactionStats(): Flow<Result<List<ChartItem>>> =
+        repository.getTransactionStats()
+
+    override fun generatePost(id: Int): Flow<Result<MessageResponse>> = repository.generatePost(id)
 }

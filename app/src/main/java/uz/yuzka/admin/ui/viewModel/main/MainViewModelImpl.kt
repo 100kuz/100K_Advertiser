@@ -200,6 +200,27 @@ class MainViewModelImpl @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
+    override fun generatePost(id: Int) {
+        if (!isConnected()) {
+            viewModelScope.launch {
+                errorFlow.emit("Internet bilan muammo bo'ldi")
+            }
+            return
+        }
+        viewModelScope.launch {
+            progressFlow.emit(true)
+        }
+        useCase.generatePost(id).onEach {
+            progressFlow.emit(false)
+            it.onSuccess { dto ->
+                errorFlow.emit(dto.message)
+            }
+            it.onFailure { throwable ->
+                errorFlow.emit(throwable.message.toString())
+            }
+        }.launchIn(viewModelScope)
+    }
+
     override fun getAllStreams() {
         viewModelScope.launch {
             progressFlow.emit(true)

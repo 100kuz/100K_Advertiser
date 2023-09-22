@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,10 +38,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uz.yuzka.admin.R
 import uz.yuzka.admin.ui.theme.BackButton
+import uz.yuzka.admin.utils.CurrencyAmountInputVisualTransformation
+import uz.yuzka.admin.utils.formatToPrice
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -184,10 +188,12 @@ fun SetDiscountBalance(discount: MutableState<String>, onConfirm: (String) -> Un
                                 .padding(top = 5.dp, start = 16.dp, end = 16.dp)
                                 .fillMaxWidth(),
                             singleLine = true,
+                            visualTransformation = CurrencyAmountInputVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                         ) {
                             Row(verticalAlignment = Alignment.Bottom) {
                                 Text(
-                                    text = sum.ifBlank { "0" },
+                                    text = sum.ifBlank { "0" }.formatToPrice(),
                                     style = TextStyle(
                                         fontSize = 36.sp,
                                         lineHeight = 45.sp,

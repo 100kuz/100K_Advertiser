@@ -8,6 +8,7 @@ import uz.yuzka.admin.data.request.GetMoneyRequest
 import uz.yuzka.admin.data.request.SetDeviceTokenRequest
 import uz.yuzka.admin.data.response.CategoriesResponse
 import uz.yuzka.admin.data.response.CharitiesResponse
+import uz.yuzka.admin.data.response.ChartResponse
 import uz.yuzka.admin.data.response.CreatePromoCodeRequest
 import uz.yuzka.admin.data.response.GetMeDto
 import uz.yuzka.admin.data.response.MessageResponse
@@ -146,5 +147,14 @@ interface MainApi {
         @Path("id") id: Int
     ): Response<MessageResponse>
 
+
+    @GET("advertiser/transactions/stats")
+    suspend fun getTransactionStatistics(
+    ): ChartResponse
+
+    @GET("advertiser/products/{id}/generate-tg-post")
+    suspend fun generatePost(
+        @Path("id") id: Int
+    ): Response<MessageResponse>
 
 }
