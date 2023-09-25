@@ -54,6 +54,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -182,18 +183,19 @@ fun TransactionsScreen(
                     onUserClick()
                 }) {
                     AsyncImage(
-                        model = painterResource(id = R.drawable.ic_user),
+                        model = getMeDto?.data?.avatar,
                         contentDescription = null,
                         error = painterResource(id = R.drawable.ic_user),
                         placeholder = painterResource(id = R.drawable.ic_user),
                         modifier = Modifier
                             .size(32.dp)
+                            .clip(CircleShape)
                             .border(
                                 width = 1.dp,
                                 color = Color(0xFFE9EBEA),
                                 shape = RoundedCornerShape(50)
-                            )
-                            .padding(8.dp)
+                            ),
+                        contentScale = ContentScale.Crop
                     )
                 }
             }

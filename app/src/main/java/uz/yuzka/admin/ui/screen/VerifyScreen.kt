@@ -1,25 +1,24 @@
 package uz.yuzka.admin.ui.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,7 +30,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -46,6 +47,7 @@ import uz.yuzka.admin.ui.theme.ErrorRed
 import uz.yuzka.admin.ui.theme.PrimaryColor
 import uz.yuzka.admin.ui.viewModel.auth.AuthViewModel
 import uz.yuzka.admin.ui.viewModel.auth.AuthViewModelImpl
+import uz.yuzka.admin.utils.MaskVisualTransformation
 
 @Composable
 fun VerifyScreen(
@@ -55,8 +57,19 @@ fun VerifyScreen(
     onLoginClick: (String) -> Unit
 ) {
 
+    val context = LocalContext.current
+
     LaunchedEffect(key1 = null) {
         viewModel.startTimer()
+    }
+
+    val error by viewModel.errorFlow.collectAsState(initial = null)
+
+    LaunchedEffect(key1 = error) {
+        if (error != null) {
+            Toast.makeText(context, "$error", Toast.LENGTH_SHORT).show()
+            viewModel.gotError()
+        }
     }
 
     val timer by viewModel.time.collectAsState(initial = "0:60")
@@ -69,10 +82,6 @@ fun VerifyScreen(
 
         var code by remember {
             mutableStateOf("")
-        }
-
-        val error by remember {
-            mutableStateOf(false)
         }
 
 
@@ -111,7 +120,7 @@ fun VerifyScreen(
                     .align(Alignment.CenterHorizontally)
             )
 
-            BasicTextField(
+            OutlinedTextField(
                 value = code,
                 onValueChange = { ch ->
                     if (ch.length <= 5) code = ch.filter { it.isDigit() }
@@ -119,23 +128,35 @@ fun VerifyScreen(
                 modifier = Modifier
                     .padding(
                         start = 16.dp,
-                        top = 15.dp,
+                        top = 30.dp,
                         end = 16.dp
                     )
                     .fillMaxWidth(),
-                decorationBox = {
-                    Row(horizontalArrangement = Arrangement.Center) {
-                        repeat(5) { index ->
-                            CharView(
-                                index = index,
-                                text = code,
-                                isError = error
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                        }
-                    }
+                shape = RoundedCornerShape(8.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.Black,
+                    unfocusedBorderColor = Color(81, 174, 231),
+                    focusedBorderColor = Color(81, 174, 231),
+                    focusedPlaceholderColor = Color(0xFF868686),
+                    unfocusedPlaceholderColor = Color(0xFF868686),
+                    unfocusedTextColor = Color.Black,
+                    focusedLabelColor = Color(81, 174, 231),
+                    unfocusedLabelColor = Color(81, 174, 231),
+                    cursorColor = Color.Black
+                ),
+                label = {
+                    Text(text = "SMS-kod")
                 },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                placeholder = {
+                    Text(text = "X-X-X-X-X")
+                },
+                textStyle = TextStyle.Default.copy(
+                    fontSize = 16.sp
+                ),
+                visualTransformation = MaskVisualTransformation("#-#-#-#-#"),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number
+                )
             )
 
             Text(

@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
@@ -78,11 +79,16 @@ fun MarketScreen(
     val hasLoadedProducts by viewModel.hasLoadedProducts.observeAsState(initial = false)
     val selectedCategory by viewModel.categoryId.observeAsState(initial = null)
     val progress by viewModel.progressFlow.collectAsState(initial = false)
+    val getMeDto by viewModel.getMeFlow.collectAsState(initial = null)
 
     LaunchedEffect(hasLoadedCategories) {
         if (!hasLoadedCategories) {
             viewModel.getCategories()
         }
+    }
+
+    LaunchedEffect(key1 = null) {
+        viewModel.getMeFromLocal()
     }
 
     LaunchedEffect(hasLoadedProducts) {
@@ -121,18 +127,20 @@ fun MarketScreen(
                     onUserClick()
                 }) {
                     AsyncImage(
-                        model = painterResource(id = R.drawable.ic_user),
+                        model = getMeDto?.data?.avatar,
                         contentDescription = null,
                         error = painterResource(id = R.drawable.ic_user),
                         placeholder = painterResource(id = R.drawable.ic_user),
                         modifier = Modifier
                             .size(32.dp)
+                            .clip(CircleShape)
                             .border(
                                 width = 1.dp,
                                 color = Color(0xFFE9EBEA),
                                 shape = RoundedCornerShape(50)
-                            )
-                            .padding(8.dp)
+                            ),
+                        contentScale = ContentScale.Crop
+
                     )
                 }
             }

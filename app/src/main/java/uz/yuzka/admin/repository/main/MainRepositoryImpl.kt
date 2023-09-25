@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import uz.yuzka.admin.base.BaseErrorResponse
 import uz.yuzka.admin.base.SaleStatus
@@ -50,6 +52,7 @@ import uz.yuzka.admin.datasource.WithdrawsDataSource
 import uz.yuzka.admin.network.MainApi
 import uz.yuzka.admin.pref.MyPref
 import uz.yuzka.seller.data.request.LogoutRequest
+import java.io.File
 import javax.inject.Inject
 
 class MainRepositoryImpl @Inject constructor(
@@ -470,7 +473,8 @@ class MainRepositoryImpl @Inject constructor(
         surname: String,
         regionId: Int,
         districtId: Int,
-        address: String
+        address: String,
+        avatar: File?
     ): Flow<Result<GetMeDto>> = flow {
 
         val name1 = (name).toRequestBody("text/plain".toMediaType())
@@ -483,7 +487,14 @@ class MainRepositoryImpl @Inject constructor(
         val districtId1 =
             (districtId.toString()).toRequestBody("text/plain".toMediaType())
 
-        val response = api.updateUser(name1, surname1, regionId1, districtId1, address1, gender)
+        val avatarBody = avatar?.let {
+            MultipartBody.Part.createFormData(
+                "avatar", it.name,
+                it.asRequestBody("image/*".toMediaType())
+            )
+        }
+
+        val response = api.updateUser(name1, surname1, regionId1, districtId1, address1, gender, avatarBody)
 
         if (response.isSuccessful) {
             pref.getMeDto = response.body()

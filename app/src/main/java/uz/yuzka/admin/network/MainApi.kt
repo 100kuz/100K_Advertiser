@@ -1,5 +1,6 @@
 package uz.yuzka.admin.network
 
+import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.*
@@ -140,6 +141,7 @@ interface MainApi {
         @Part("district_id") districtId: RequestBody,
         @Part("address") address: RequestBody,
         @Part("gender") gender: RequestBody,
+        @Part avatar: MultipartBody.Part? = null
     ): Response<GetMeDto>
 
     @DELETE("advertiser/streams/{id}")

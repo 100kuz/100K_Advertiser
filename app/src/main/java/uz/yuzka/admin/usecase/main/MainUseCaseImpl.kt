@@ -26,6 +26,7 @@ import uz.yuzka.admin.data.response.TransactionItem
 import uz.yuzka.admin.data.response.WithdrawItemData
 import uz.yuzka.admin.data.response.WithdrawsDto
 import uz.yuzka.admin.repository.main.MainRepository
+import java.io.File
 import javax.inject.Inject
 
 class MainUseCaseImpl @Inject constructor(
@@ -113,8 +114,9 @@ class MainUseCaseImpl @Inject constructor(
         surname: String,
         regionId: Int,
         districtId: Int,
-        address: String
-    ): Flow<Result<GetMeDto>> = repository.updateUser(name, surname, regionId, districtId, address)
+        address: String,
+        avatar: File?
+    ): Flow<Result<GetMeDto>> = repository.updateUser(name, surname, regionId, districtId, address,avatar)
 
     override fun deleteStream(id: Int): Flow<Result<MessageResponse>> = repository.deleteStream(id)
 

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
@@ -22,7 +23,6 @@ import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
@@ -38,8 +38,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -73,6 +75,7 @@ fun StatisticsScreen(
     val hasLoaded by viewModel.hasLoadedStatistics.observeAsState(false)
 
     val progress by viewModel.progressFlow.collectAsState(initial = false)
+    val getMeDto by viewModel.getMeFlow.collectAsState(initial = null)
 
     val tabs = listOf(
         SaleStatus.ALL,
@@ -89,6 +92,7 @@ fun StatisticsScreen(
         if (!hasLoaded) {
             viewModel.getStatistics(SaleStatus.ALL)
         }
+        viewModel.getMeFromLocal()
     }
 
     val pullRefreshState =
@@ -120,18 +124,20 @@ fun StatisticsScreen(
                     onUserClick()
                 }) {
                     AsyncImage(
-                        model = painterResource(id = R.drawable.ic_user),
+                        model = getMeDto?.data?.avatar,
                         contentDescription = null,
                         error = painterResource(id = R.drawable.ic_user),
                         placeholder = painterResource(id = R.drawable.ic_user),
                         modifier = Modifier
                             .size(32.dp)
+                            .clip(CircleShape)
                             .border(
                                 width = 1.dp,
                                 color = Color(0xFFE9EBEA),
                                 shape = RoundedCornerShape(50)
-                            )
-                            .padding(8.dp)
+                            ),
+                        contentScale = ContentScale.Crop
+
                     )
                 }
             }

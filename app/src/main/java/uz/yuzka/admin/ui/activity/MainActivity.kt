@@ -2,7 +2,6 @@ package uz.yuzka.admin.ui.activity
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -454,7 +453,6 @@ class MainActivity : ComponentActivity() {
                 return@addOnCompleteListener
             }
             val token = task.result
-            Log.d("VVVVV", "onCreate: $token")
             if (token != pref.lastFcmToken)
                 mainViewModel.setDeviceToken(SetDeviceTokenRequest(device_id = token))
 

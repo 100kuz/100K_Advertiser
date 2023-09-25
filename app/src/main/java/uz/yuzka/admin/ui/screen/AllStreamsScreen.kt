@@ -42,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -71,6 +72,7 @@ fun AllStreamsContent(
 
     val hasLoadedStreams by mainViewModel.hasLoadedStreams.observeAsState(initial = false)
     val streams = mainViewModel.streamsFlow.collectAsLazyPagingItems()
+    val getMeDto = mainViewModel.getMeFlow.collectAsState(null)
     val progress by mainViewModel.progressFlow.collectAsState(initial = false)
 
     val pullRefreshState = rememberPullRefreshState(
@@ -84,6 +86,10 @@ fun AllStreamsContent(
         if (!hasLoadedStreams) {
             mainViewModel.getAllStreams()
         }
+    }
+
+    LaunchedEffect(key1 = null) {
+        mainViewModel.getMeFromLocal()
     }
 
     val lazyListState = rememberLazyListState()
@@ -109,18 +115,20 @@ fun AllStreamsContent(
                     onUserClick()
                 }) {
                     AsyncImage(
-                        model = painterResource(id = R.drawable.ic_user),
+                        model = getMeDto.value?.data?.avatar,
                         contentDescription = null,
                         error = painterResource(id = R.drawable.ic_user),
                         placeholder = painterResource(id = R.drawable.ic_user),
                         modifier = Modifier
                             .size(32.dp)
+                            .clip(CircleShape)
                             .border(
                                 width = 1.dp,
                                 color = Color(0xFFE9EBEA),
                                 shape = RoundedCornerShape(50)
-                            )
-                            .padding(8.dp)
+                            ),
+                        contentScale = ContentScale.Crop
+
                     )
                 }
             }

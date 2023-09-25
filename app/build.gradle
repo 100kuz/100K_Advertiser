@@ -15,8 +15,8 @@ android {
         applicationId "uz.yuzka.admin"
         minSdk 24
         targetSdk 33
-        versionCode 3
-        versionName "1.0.0-alpha"
+        versionCode 4
+        versionName "1.0.0-alpha-1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -27,7 +27,7 @@ android {
     buildTypes {
         getByName("debug") {
             buildConfigField("String", "ARCHIVE_BASE_NAME", "\"provider100k\"")
-            buildConfigField("String", "BASE_URL", "\"https://larashop.yuzka.uz/api/\"")
+            buildConfigField("String", "BASE_URL", "\"https://api.100k.uz/api/\"")
             buildConfigField "String", "BEETO_DATABASE", '"uz.invan.beetoexpress.cache.data.database.BeetoDatabase"'
             signingConfig = signingConfigs.getByName("debug")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -106,7 +106,6 @@ dependencies {
     def paging_version = "3.1.1"
     implementation "androidx.paging:paging-runtime:$paging_version"
     implementation "androidx.paging:paging-compose:1.0.0-alpha17"
-
 
     implementation 'com.google.accompanist:accompanist-swiperefresh:0.29.0-alpha'
     implementation "com.google.accompanist:accompanist-flowlayout:0.29.0-alpha"

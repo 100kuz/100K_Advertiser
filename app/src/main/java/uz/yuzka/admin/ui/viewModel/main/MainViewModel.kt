@@ -11,6 +11,7 @@ import uz.yuzka.admin.data.response.ProductDto
 import uz.yuzka.admin.data.response.RegionDto
 import uz.yuzka.admin.data.response.StreamDetailedDto
 import uz.yuzka.admin.data.response.StreamDto
+import java.io.File
 
 interface MainViewModel {
 
@@ -84,7 +85,8 @@ interface MainViewModel {
         surname: String,
         regionId: Int,
         districtId: Int,
-        address: String
+        address: String,
+        avatar: File? = null
     )
 
     fun gotUpdateSuccess()

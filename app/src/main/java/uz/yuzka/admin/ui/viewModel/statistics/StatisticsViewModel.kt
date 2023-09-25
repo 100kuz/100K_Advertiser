@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
 import uz.yuzka.admin.base.SaleStatus
+import uz.yuzka.admin.data.response.GetMeDto
 import uz.yuzka.admin.data.response.StatisticsDto
 
 interface StatisticsViewModel {
@@ -12,6 +13,7 @@ interface StatisticsViewModel {
     val errorFlow: Flow<String?>
     val statistics: Flow<PagingData<StatisticsDto>>
     val status: LiveData<SaleStatus>
+    val getMeFlow: Flow<GetMeDto>
 
     val hasLoadedStatistics: LiveData<Boolean>
 
@@ -20,5 +22,7 @@ interface StatisticsViewModel {
     fun getStatistics(status: SaleStatus)
 
     fun gotError()
+
+    fun getMeFromLocal()
 
 }

@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import uz.yuzka.admin.base.SaleStatus
+import uz.yuzka.admin.data.response.GetMeDto
 import uz.yuzka.admin.data.response.StatisticsDto
 import uz.yuzka.admin.usecase.main.MainUseCase
 import uz.yuzka.admin.utils.eventValueFlow
@@ -25,6 +26,7 @@ class StatisticsViewModelImpl @Inject constructor(
     override val errorFlow = eventValueFlow<String?>()
     override val status = MutableLiveData<SaleStatus>(SaleStatus.ALL)
     override val statistics = eventValueFlow<PagingData<StatisticsDto>>()
+    override val getMeFlow = eventValueFlow<GetMeDto>()
 
     override val hasLoadedStatistics = MutableLiveData(false)
 
@@ -51,5 +53,14 @@ class StatisticsViewModelImpl @Inject constructor(
             errorFlow.emit(null)
         }
     }
+
+    override fun getMeFromLocal() {
+        viewModelScope.launch {
+            useCase.getMeFromLocal().onEach {
+                it?.let { getMeFlow.emit(it) }
+            }.launchIn(viewModelScope)
+        }
+    }
+
 
 }

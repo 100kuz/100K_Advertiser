@@ -1,6 +1,13 @@
 package uz.yuzka.admin.ui.screen
 
+import android.content.Context
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.os.Environment
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -51,6 +58,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -59,17 +67,26 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 import uz.yuzka.admin.R
 import uz.yuzka.admin.ui.screen.tools.DistrictModalLayout
+import uz.yuzka.admin.ui.screen.tools.GetContentDialog
 import uz.yuzka.admin.ui.screen.tools.ModalSheetType
 import uz.yuzka.admin.ui.screen.tools.RegionsModalLayout
 import uz.yuzka.admin.ui.theme.BackButton
 import uz.yuzka.admin.ui.viewModel.main.MainViewModel
 import uz.yuzka.admin.ui.viewModel.main.MainViewModelImpl
 import uz.yuzka.admin.utils.collectClickAsState
+import uz.yuzka.admin.utils.fileFromUri
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
@@ -78,9 +95,22 @@ fun UserScreen(
     onBackPress: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
-
     val context = LocalContext.current
+
     val getMeData by viewModel.getMeFlow.collectAsState(initial = null)
+
+    var avatar by remember {
+        mutableStateOf(getMeData?.data?.avatar)
+    }
+
+    var uploadImage by remember {
+        mutableStateOf<File?>(null)
+    }
+
+    var cameraImage by remember {
+        mutableStateOf<Uri?>(null)
+    }
+
     val progress by viewModel.progressFlow.collectAsState(initial = false)
     val hasLoadedRegions by viewModel.hasLoadedRegions.observeAsState(initial = false)
     val updateSuccess by viewModel.updateUserFlow.observeAsState(initial = false)
@@ -174,6 +204,7 @@ fun UserScreen(
             address = it.address ?: ""
             cityId = it.region_id ?: -1
             districtId = it.district_id ?: -1
+            avatar = it.avatar
         }
     }
 
@@ -184,10 +215,81 @@ fun UserScreen(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
+
     val scope = rememberCoroutineScope()
+
+    val filePickerListener = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri ->
+            uri?.let {
+                fileFromUri(context, uri)?.let {
+                    avatar = it.absolutePath
+                    uploadImage = it
+                }
+            }
+        }
+    )
+
+    val cameraResult = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture(),
+        onResult = {
+            if (it) {
+                cameraImage?.let { path ->
+                    fileFromUri(context = context, path)?.let { file ->
+                        uploadImage = file
+                        avatar = file.absolutePath
+                    }
+                }
+            }
+        }
+    )
+
+    val filePermission = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = {
+            if (it) {
+                filePickerListener.launch("image/*")
+            }
+        }
+    )
+
+    val cameraPermission = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = {
+            if (it) {
+                getTmpFileUri(context = context).let { uri ->
+                    cameraImage = uri
+                    cameraResult.launch(uri)
+                }
+            }
+        }
+    )
+
+    fun takeImage() {
+        if (checkCameraPermission(context = context)) {
+            getTmpFileUri(context = context).let { uri ->
+                cameraImage = uri
+                cameraResult.launch(uri)
+            }
+        } else {
+            cameraPermission.launch(android.Manifest.permission.CAMERA)
+        }
+    }
+
+    fun getImage() {
+        if (checkFilePermission(context)) filePickerListener.launch("image/*")
+        else filePermission.launch(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) android.Manifest.permission.READ_MEDIA_IMAGES
+            else android.Manifest.permission.READ_EXTERNAL_STORAGE
+        )
+    }
 
     var sheetState by remember {
         mutableStateOf<ModalSheetType>(ModalSheetType.Regions)
+    }
+
+    var showContentDialog by remember {
+        mutableStateOf(false)
     }
 
     val cityInteractionSource = remember {
@@ -301,6 +403,24 @@ fun UserScreen(
                     .background(Color(0xFFF0F0F0))
                     .pullRefresh(pullRefreshState)
             ) {
+
+                if (showContentDialog) {
+                    Dialog(
+                        onDismissRequest = { showContentDialog = false }
+                    ) {
+                        GetContentDialog(
+                            onGalleryClick = {
+                                getImage()
+                                showContentDialog = false
+                            },
+                            onCameraClick = {
+                                takeImage()
+                                showContentDialog = false
+                            }
+                        )
+                    }
+                }
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -321,15 +441,21 @@ fun UserScreen(
                         AsyncImage(
                             error = painterResource(id = R.drawable.ic_user),
                             placeholder = painterResource(id = R.drawable.ic_user),
-                            model = getMeData?.data?.avatar,
+                            model = avatar,
                             contentDescription = null,
                             modifier = Modifier
                                 .size(67.dp)
                                 .clip(CircleShape)
                                 .border(width = 1.dp, color = Color(0xFF51AEE7), CircleShape)
                                 .background(color = Color(0x3351AEE7))
-                                .padding(15.dp)
+                                .clickable(interactionSource = remember {
+                                    MutableInteractionSource()
+                                }, indication = rememberRipple()) {
+                                    showContentDialog = true
+                                },
+                            contentScale = ContentScale.Crop
                         )
+
                     }
 
                     Row(
@@ -701,7 +827,14 @@ fun UserScreen(
 
                 Button(
                     onClick = {
-                        viewModel.updateUser(name, surname, cityId, districtId, address)
+                        viewModel.updateUser(
+                            name,
+                            surname,
+                            cityId,
+                            districtId,
+                            address,
+                            uploadImage
+                        )
                     },
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -731,4 +864,40 @@ fun UserScreen(
         }
 
     }
+
+}
+
+fun getTmpFileUri(context: Context): Uri {
+    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+
+    val tmpFile = File.createTempFile(
+        "IMG${timeStamp}",
+        ".jpg",
+        context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+    )
+
+    return FileProvider.getUriForFile(
+        context, "${context.packageName}.fileprovider", tmpFile
+    )
+}
+
+fun checkFilePermission(context: Context): Boolean {
+    val checked =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) ContextCompat.checkSelfPermission(
+            context,
+            android.Manifest.permission.READ_MEDIA_IMAGES
+        ) else ContextCompat.checkSelfPermission(
+            context,
+            android.Manifest.permission.READ_EXTERNAL_STORAGE
+        )
+    return checked == PackageManager.PERMISSION_GRANTED
+}
+
+fun checkCameraPermission(context: Context): Boolean {
+    val checked =
+        ContextCompat.checkSelfPermission(
+            context,
+            android.Manifest.permission.CAMERA
+        )
+    return checked == PackageManager.PERMISSION_GRANTED
 }

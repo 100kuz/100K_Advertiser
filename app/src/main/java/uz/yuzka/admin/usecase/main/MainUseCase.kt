@@ -25,6 +25,7 @@ import uz.yuzka.admin.data.response.StreamDto
 import uz.yuzka.admin.data.response.TransactionItem
 import uz.yuzka.admin.data.response.WithdrawItemData
 import uz.yuzka.admin.data.response.WithdrawsDto
+import java.io.File
 
 interface MainUseCase {
     suspend fun getMe(): Flow<Result<GetMeDto?>>
@@ -85,7 +86,8 @@ interface MainUseCase {
         surname: String,
         regionId: Int,
         districtId: Int,
-        address: String
+        address: String,
+        avatar: File? = null
     ): Flow<Result<GetMeDto>>
 
     fun deleteStream(id: Int): Flow<Result<MessageResponse>>

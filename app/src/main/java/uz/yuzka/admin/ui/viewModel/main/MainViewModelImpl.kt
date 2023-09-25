@@ -21,6 +21,7 @@ import uz.yuzka.admin.data.response.StreamDto
 import uz.yuzka.admin.usecase.main.MainUseCase
 import uz.yuzka.admin.utils.eventValueFlow
 import uz.yuzka.admin.utils.isConnected
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -308,7 +309,8 @@ class MainViewModelImpl @Inject constructor(
         surname: String,
         regionId: Int,
         districtId: Int,
-        address: String
+        address: String,
+        avatar: File?
     ) {
         if (!isConnected()) {
             return
@@ -316,7 +318,7 @@ class MainViewModelImpl @Inject constructor(
         viewModelScope.launch {
             progressFlow.emit(true)
         }
-        useCase.updateUser(name, surname, regionId, districtId, address).onEach {
+        useCase.updateUser(name, surname, regionId, districtId, address,avatar).onEach {
             progressFlow.emit(false)
             it.onSuccess { res ->
                 getMeFlow.emit(res)
