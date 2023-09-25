@@ -47,6 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import uz.yuzka.admin.R
 import uz.yuzka.admin.ui.viewModel.home.HomeViewModel
 import uz.yuzka.admin.ui.viewModel.home.HomeViewModelImpl
@@ -110,10 +111,11 @@ fun HomeScreen(
                         onUserClick()
                     }
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_user),
+                    AsyncImage(
+                        model = painterResource(id = R.drawable.ic_user),
                         contentDescription = null,
-                        tint = Color.Black,
+                        error = painterResource(id = R.drawable.ic_user),
+                        placeholder = painterResource(id = R.drawable.ic_user),
                         modifier = Modifier
                             .size(32.dp)
                             .border(

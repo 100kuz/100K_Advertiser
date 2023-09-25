@@ -17,7 +17,7 @@ data class StreamDetailedDto(
     val link: String?,
     val name: String?,
     val orders_stats: OrdersStats?,
-    val product: Product,
+    val product: Product?,
     val product_id: Int,
     val product_status: String,
     val requests: Int,

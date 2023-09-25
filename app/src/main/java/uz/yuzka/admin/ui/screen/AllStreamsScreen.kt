@@ -108,10 +108,11 @@ fun AllStreamsContent(
                 IconButton(onClick = {
                     onUserClick()
                 }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_user),
+                    AsyncImage(
+                        model = painterResource(id = R.drawable.ic_user),
                         contentDescription = null,
-                        tint = Color.Black,
+                        error = painterResource(id = R.drawable.ic_user),
+                        placeholder = painterResource(id = R.drawable.ic_user),
                         modifier = Modifier
                             .size(32.dp)
                             .border(
@@ -242,7 +243,7 @@ fun ItemStream(data: StreamDetailedDto, onStreamClick: (Int) -> Unit) {
                 )
 
                 else -> AsyncImage(
-                    model = data.product.image,
+                    model = data.product?.image,
                     contentDescription = null,
                     modifier = Modifier
                         .size(48.dp)
@@ -268,7 +269,7 @@ fun ItemStream(data: StreamDetailedDto, onStreamClick: (Int) -> Unit) {
                 )
 
                 Text(
-                    text = data.product.title,
+                    text = data.product?.title ?: "---",
                     style = TextStyle(
                         fontSize = 15.sp,
                         lineHeight = 18.sp,

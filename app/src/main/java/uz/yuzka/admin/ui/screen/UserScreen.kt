@@ -1,7 +1,6 @@
 package uz.yuzka.admin.ui.screen
 
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -61,6 +60,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 import uz.yuzka.admin.R
 import uz.yuzka.admin.ui.screen.tools.DistrictModalLayout
@@ -318,8 +318,10 @@ fun UserScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
 
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_user),
+                        AsyncImage(
+                            error = painterResource(id = R.drawable.ic_user),
+                            placeholder = painterResource(id = R.drawable.ic_user),
+                            model = getMeData?.data?.avatar,
                             contentDescription = null,
                             modifier = Modifier
                                 .size(67.dp)

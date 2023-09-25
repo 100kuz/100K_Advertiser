@@ -68,6 +68,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
+import coil.compose.AsyncImage
 import uz.yuzka.admin.R
 import uz.yuzka.admin.data.request.GetMoneyRequest
 import uz.yuzka.admin.data.response.WithdrawsDto
@@ -180,10 +181,11 @@ fun TransactionsScreen(
                 IconButton(onClick = {
                     onUserClick()
                 }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_user),
+                    AsyncImage(
+                        model = painterResource(id = R.drawable.ic_user),
                         contentDescription = null,
-                        tint = Color.Black,
+                        error = painterResource(id = R.drawable.ic_user),
+                        placeholder = painterResource(id = R.drawable.ic_user),
                         modifier = Modifier
                             .size(32.dp)
                             .border(

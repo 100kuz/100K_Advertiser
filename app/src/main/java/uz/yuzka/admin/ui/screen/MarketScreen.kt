@@ -120,10 +120,11 @@ fun MarketScreen(
                 IconButton(onClick = {
                     onUserClick()
                 }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_user),
+                    AsyncImage(
+                        model = painterResource(id = R.drawable.ic_user),
                         contentDescription = null,
-                        tint = Color.Black,
+                        error = painterResource(id = R.drawable.ic_user),
+                        placeholder = painterResource(id = R.drawable.ic_user),
                         modifier = Modifier
                             .size(32.dp)
                             .border(
