@@ -25,7 +25,6 @@ import uz.yuzka.admin.data.response.StreamDto
 import uz.yuzka.admin.data.response.TransactionItem
 import uz.yuzka.admin.data.response.WithdrawItemData
 import uz.yuzka.admin.data.response.WithdrawsDto
-import uz.yuzka.seller.data.request.LogoutRequest
 import java.io.File
 
 interface MainRepository {

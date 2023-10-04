@@ -9,14 +9,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import uz.yuzka.admin.data.request.LoginRequest
+import uz.yuzka.admin.data.request.PasswordRequest
+import uz.yuzka.admin.data.request.SetDeviceTokenRequest
+import uz.yuzka.admin.data.request.UsernameLoginRequest
 import uz.yuzka.admin.usecase.auth.AuthUseCase
 import uz.yuzka.admin.usecase.main.MainUseCase
 import uz.yuzka.admin.utils.eventFlow
 import uz.yuzka.admin.utils.eventValueFlow
 import uz.yuzka.admin.utils.isConnected
-import uz.yuzka.seller.data.request.LoginRequest
-import uz.yuzka.seller.data.request.PasswordRequest
-import uz.yuzka.admin.data.request.SetDeviceTokenRequest
 import javax.inject.Inject
 
 @HiltViewModel
@@ -50,6 +51,28 @@ class AuthViewModelImpl @Inject constructor(
             progressFlow.emit(true)
         }
         useCase.login(request).onEach {
+            it.onSuccess {
+                progressFlow.emit(false)
+                introStartFlow.emit(true)
+            }
+            it.onFailure { throwable ->
+                progressFlow.emit(false)
+                errorFlow.emit(throwable.message.toString())
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    override fun loginByUsername(request: UsernameLoginRequest) {
+        if (!isConnected()) {
+            viewModelScope.launch {
+                errorFlow.emit("Internet bilan muammo bo'ldi")
+            }
+            return
+        }
+        viewModelScope.launch {
+            progressFlow.emit(true)
+        }
+        useCase.loginByUsername(request).onEach {
             it.onSuccess {
                 progressFlow.emit(false)
                 introStartFlow.emit(true)

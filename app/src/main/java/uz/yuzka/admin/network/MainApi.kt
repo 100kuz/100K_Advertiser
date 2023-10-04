@@ -26,7 +26,7 @@ import uz.yuzka.admin.data.response.StreamsResponse
 import uz.yuzka.admin.data.response.TransactionsResponse
 import uz.yuzka.admin.data.response.WithdrawItemData
 import uz.yuzka.admin.data.response.WithdrawsResponse
-import uz.yuzka.seller.data.request.LogoutRequest
+import uz.yuzka.admin.data.request.LogoutRequest
 
 interface MainApi {
 

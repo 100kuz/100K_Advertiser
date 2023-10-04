@@ -21,15 +21,17 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import uz.yuzka.admin.data.request.LoginRequest
+import uz.yuzka.admin.data.request.PasswordRequest
+import uz.yuzka.admin.data.request.UsernameLoginRequest
 import uz.yuzka.admin.ui.navigation.AuthNavigation
 import uz.yuzka.admin.ui.navigation.Screen
 import uz.yuzka.admin.ui.navigation.rememberNavigationState
 import uz.yuzka.admin.ui.screen.LoginScreen
+import uz.yuzka.admin.ui.screen.UsernameLoginScreen
 import uz.yuzka.admin.ui.screen.VerifyScreen
 import uz.yuzka.admin.ui.viewModel.auth.AuthViewModel
 import uz.yuzka.admin.ui.viewModel.auth.AuthViewModelImpl
-import uz.yuzka.seller.data.request.LoginRequest
-import uz.yuzka.seller.data.request.PasswordRequest
 
 @AndroidEntryPoint
 class AuthActivity : ComponentActivity() {
@@ -81,6 +83,9 @@ class AuthActivity : ComponentActivity() {
                             onVerifyClick = {
                                 phone = it
                                 getPassword.invoke("+${it}")
+                            },
+                            onLoginClick = {
+                                navigationState.navigateTo(Screen.UsernameLoginScreen.route)
                             }
                         )
                     },
@@ -93,6 +98,16 @@ class AuthActivity : ComponentActivity() {
                             phone = phone,
                             onLoginClick = { code ->
                                 viewModel.login(LoginRequest("+${phone}", code))
+                            }
+                        )
+                    },
+                    usernameLoginScreen = {
+                        UsernameLoginScreen(
+                            onBackPress = {
+                                navigationState.navHostController.popBackStack()
+                            },
+                            onVerifyClick = { username, password ->
+                                viewModel.loginByUsername(UsernameLoginRequest(username, password))
                             }
                         )
                     }

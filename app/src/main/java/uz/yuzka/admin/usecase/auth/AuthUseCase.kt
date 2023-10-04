@@ -1,14 +1,17 @@
 package uz.yuzka.admin.usecase.auth
 
 import kotlinx.coroutines.flow.Flow
-import uz.yuzka.seller.data.request.LoginRequest
-import uz.yuzka.seller.data.request.PasswordRequest
-import uz.yuzka.seller.data.request.PasswordResponse
+import uz.yuzka.admin.data.request.LoginRequest
+import uz.yuzka.admin.data.request.PasswordRequest
+import uz.yuzka.admin.data.request.PasswordResponse
+import uz.yuzka.admin.data.request.UsernameLoginRequest
 import uz.yuzka.admin.data.response.LoginDto
 
 interface AuthUseCase {
 
     fun login(body: LoginRequest): Flow<Result<LoginDto>>
+
+    fun loginByUsername(body: UsernameLoginRequest): Flow<Result<LoginDto>>
 
     fun startScreen(): Boolean
 

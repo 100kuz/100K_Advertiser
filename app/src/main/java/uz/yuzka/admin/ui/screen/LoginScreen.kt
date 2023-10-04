@@ -1,6 +1,8 @@
 package uz.yuzka.admin.ui.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -30,6 +33,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uz.yuzka.admin.R
@@ -37,7 +41,7 @@ import uz.yuzka.admin.ui.theme.PrimaryColor
 import uz.yuzka.admin.utils.MaskVisualTransformation
 
 @Composable
-fun LoginScreen(onVerifyClick: (String) -> Unit) {
+fun LoginScreen(onVerifyClick: (String) -> Unit, onLoginClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -147,31 +151,51 @@ fun LoginScreen(onVerifyClick: (String) -> Unit) {
 
             }
 
-        }
 
-        Button(
-            onClick = {
-                onVerifyClick("998$phone")
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    horizontal = 20.dp,
-                    vertical = 30.dp
-                )
-                .align(Alignment.BottomCenter),
-            shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor),
-            enabled = checked && phone.length == 9
-        ) {
             Text(
-                text = "SMS kodni olish",
-                fontSize = 14.sp,
+                text = "Login va parol orqali kirish",
+                fontSize = 15.sp,
+                lineHeight = 18.sp,
                 fontFamily = FontFamily(Font(R.font.roboto_regular)),
-                fontWeight = FontWeight(500),
-                color = Color(0xFFFFFFFF),
+                fontWeight = FontWeight(400),
+                color = Color(0xFF2196F3),
                 textAlign = TextAlign.Center,
+                style = TextStyle(textDecoration = TextDecoration.Underline),
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .clickable(interactionSource = remember {
+                        MutableInteractionSource()
+                    }, indication = rememberRipple()) {
+                        onLoginClick()
+                    }
             )
+
+
+            Button(
+                onClick = {
+                    onVerifyClick("998$phone")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = 20.dp,
+                        vertical = 20.dp
+                    )
+                    .align(Alignment.CenterHorizontally),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor),
+                enabled = checked && phone.length == 9
+            ) {
+                Text(
+                    text = "SMS kodni olish",
+                    fontSize = 14.sp,
+                    fontFamily = FontFamily(Font(R.font.roboto_regular)),
+                    fontWeight = FontWeight(500),
+                    color = Color(0xFFFFFFFF),
+                    textAlign = TextAlign.Center,
+                )
+            }
+
         }
 
     }

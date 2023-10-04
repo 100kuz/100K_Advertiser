@@ -1,4 +1,4 @@
-package uz.yuzka.seller.data.request
+package uz.yuzka.admin.data.request
 
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
@@ -18,11 +18,16 @@ data class PasswordRequest(
     @SerializedName("phone")
     val phone: String,
 
-) : Serializable
+    ) : Serializable
 
 data class PasswordResponse(
 
     @SerializedName("message")
     val phone: String,
 
-) : Serializable
+    ) : Serializable
+
+data class UsernameLoginRequest(
+    val username: String,
+    val password: String
+)

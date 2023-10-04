@@ -177,42 +177,43 @@ fun VerifyScreen(
                     }
             )
 
-        }
-
-        Text(
-            text = "Qayta yuborish uchun vaqt: $timer",
-            fontSize = 15.sp,
-            lineHeight = 18.sp,
-            fontFamily = FontFamily(Font(R.font.roboto_regular)),
-            fontWeight = FontWeight(400),
-            color = Color(0xFF868686),
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .padding(bottom = 100.dp)
-                .align(Alignment.BottomCenter)
-        )
-
-        Button(
-            onClick = { onLoginClick(code) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    horizontal = 20.dp,
-                    vertical = 30.dp
-                )
-                .align(Alignment.BottomCenter),
-            shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor),
-            enabled = code.length == 5
-        ) {
             Text(
-                text = "Kirish",
-                fontSize = 14.sp,
+                text = "Qayta yuborish uchun vaqt: $timer",
+                fontSize = 15.sp,
+                lineHeight = 18.sp,
                 fontFamily = FontFamily(Font(R.font.roboto_regular)),
-                fontWeight = FontWeight(500),
-                color = Color(0xFFFFFFFF),
+                fontWeight = FontWeight(400),
+                color = Color(0xFF868686),
                 textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .align(Alignment.CenterHorizontally)
             )
+
+            Button(
+                onClick = { onLoginClick(code) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = 20.dp,
+                        vertical = 20.dp
+                    )
+                    .align(Alignment.CenterHorizontally),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor),
+                enabled = code.length == 5
+            ) {
+                Text(
+                    text = "Kirish",
+                    fontSize = 14.sp,
+                    fontFamily = FontFamily(Font(R.font.roboto_regular)),
+                    fontWeight = FontWeight(500),
+                    color = Color(0xFFFFFFFF),
+                    textAlign = TextAlign.Center,
+                )
+            }
+
+
         }
 
     }

@@ -51,7 +51,7 @@ import uz.yuzka.admin.datasource.TransactionsDataSource
 import uz.yuzka.admin.datasource.WithdrawsDataSource
 import uz.yuzka.admin.network.MainApi
 import uz.yuzka.admin.pref.MyPref
-import uz.yuzka.seller.data.request.LogoutRequest
+import uz.yuzka.admin.data.request.LogoutRequest
 import java.io.File
 import javax.inject.Inject
 

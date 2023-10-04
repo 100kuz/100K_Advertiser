@@ -104,6 +104,7 @@ fun AuthNavigation(
     startDestination: String = Screen.AuthScreen.route,
     authContent: @Composable () -> Unit,
     verifyContent: @Composable (String) -> Unit,
+    usernameLoginScreen: @Composable () -> Unit,
 ) {
 
     NavHost(
@@ -114,6 +115,10 @@ fun AuthNavigation(
 
         composable(Screen.AuthScreen.route) {
             authContent()
+        }
+
+        composable(Screen.UsernameLoginScreen.route) {
+            usernameLoginScreen()
         }
 
         composable(Screen.VerifyScreen.route, arguments = listOf(navArgument("phone") {
@@ -151,6 +156,7 @@ sealed class Screen(val route: String) {
     }
 
     object AuthScreen : Screen(AUTH_ROUTE)
+    object UsernameLoginScreen : Screen(USERNAME_LOGIN_ROUTE)
     object VerifyScreen : Screen(VERIFY_ROUTE) {
         fun getRouteWithArgs(phone: String): String {
             return "verify/$phone"
@@ -172,6 +178,7 @@ sealed class Screen(val route: String) {
         const val CREATE_PROMO_CODE_ROUTE = "create_promo_code"
         const val CREATE_STREAM_ROUTE = "create_stream/{id}"
         const val AUTH_ROUTE = "auth"
+        const val USERNAME_LOGIN_ROUTE = "username_login"
         const val VERIFY_ROUTE = "verify/{phone}"
     }
 }

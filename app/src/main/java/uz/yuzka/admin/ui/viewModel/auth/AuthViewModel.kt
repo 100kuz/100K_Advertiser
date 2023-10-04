@@ -2,9 +2,10 @@ package uz.yuzka.admin.ui.viewModel.auth
 
 import androidx.lifecycle.LiveData
 import kotlinx.coroutines.flow.Flow
-import uz.yuzka.seller.data.request.LoginRequest
-import uz.yuzka.seller.data.request.PasswordRequest
+import uz.yuzka.admin.data.request.LoginRequest
+import uz.yuzka.admin.data.request.PasswordRequest
 import uz.yuzka.admin.data.request.SetDeviceTokenRequest
+import uz.yuzka.admin.data.request.UsernameLoginRequest
 
 interface AuthViewModel {
 
@@ -21,6 +22,8 @@ interface AuthViewModel {
     val time: Flow<String>
 
     fun login(request: LoginRequest)
+
+    fun loginByUsername(request: UsernameLoginRequest)
 
     fun getPassword(request: PasswordRequest)
 
