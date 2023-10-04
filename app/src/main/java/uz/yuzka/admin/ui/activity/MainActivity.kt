@@ -30,6 +30,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.google.android.play.core.appupdate.AppUpdateInfo
+import com.google.android.play.core.appupdate.AppUpdateManager
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.install.InstallState
+import com.google.android.play.core.install.InstallStateUpdatedListener
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.InstallStatus
+import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 import uz.yuzka.admin.R
@@ -65,6 +73,11 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    companion object {
+        const val APP_UPDATE_REQUEST_CODE = 100
+    }
+
+
     @Inject
     lateinit var pref: MyPref
 
@@ -81,8 +94,68 @@ class MainActivity : ComponentActivity() {
     private val mainViewModel: MainViewModel by viewModels<MainViewModelImpl>()
     private val createPromoCodeVM: CreatePromoCodeViewModel by viewModels<CreatePromoCodeViewModelImpl>()
 
+    private lateinit var appUpdateManager: AppUpdateManager
+    private var updateInfo: AppUpdateInfo? = null
+    private var updateListener = InstallStateUpdatedListener { state: InstallState ->
+
+        if (state.installStatus() == InstallStatus.DOWNLOADED) {
+            appUpdateManager.completeUpdate()
+        }
+    }
+
+
+    private var installStateUpdatedListener: InstallStateUpdatedListener =
+        object : InstallStateUpdatedListener {
+            override fun onStateUpdate(state: InstallState) {
+                if (state.installStatus() == InstallStatus.DOWNLOADED) {
+                    appUpdateManager.completeUpdate()
+                } else if (state.installStatus() == InstallStatus.INSTALLED) {
+                    appUpdateManager.unregisterListener(this)
+                }
+            }
+        }
+
+    private fun startForInAppUpdate(it: AppUpdateInfo?) {
+        try {
+            appUpdateManager.startUpdateFlowForResult(
+                it!!,
+                AppUpdateType.IMMEDIATE,
+                this,
+                APP_UPDATE_REQUEST_CODE
+            )
+        } catch (_: java.lang.Exception) {
+
+        }
+    }
+
+    private fun checkForUpdate() {
+        appUpdateManager.appUpdateInfo.addOnSuccessListener {
+            if (it.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
+                it.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
+            ) {
+                updateInfo = it
+                startForInAppUpdate(updateInfo)
+            }
+        }
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        appUpdateManager.unregisterListener(installStateUpdatedListener)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        try {
+            appUpdateManager = AppUpdateManagerFactory.create(this)
+            appUpdateManager.registerListener(updateListener)
+            checkForUpdate()
+        } catch (_: Exception) {
+
+        }
+
 
         setContent {
             val navigationState = rememberNavigationState()
@@ -459,4 +532,27 @@ class MainActivity : ComponentActivity() {
         }
 
     }
+
+
+    override fun onResume() {
+        super.onResume()
+
+        appUpdateManager
+            .appUpdateInfo
+            .addOnSuccessListener { appUpdateInfo ->
+                if (appUpdateInfo.updateAvailability()
+                    == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
+                ) {
+                    // If an in-app update is already running, resume the update.
+                    appUpdateManager.startUpdateFlowForResult(
+                        appUpdateInfo,
+                        AppUpdateType.IMMEDIATE,
+                        this,
+                        APP_UPDATE_REQUEST_CODE
+                    )
+                }
+            }
+    }
+
+
 }
