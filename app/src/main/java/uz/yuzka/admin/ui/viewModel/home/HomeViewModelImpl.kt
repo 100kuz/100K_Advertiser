@@ -33,6 +33,7 @@ class HomeViewModelImpl @Inject constructor(
     override val status = MutableLiveData<SaleStatus>(SaleStatus.ALL)
     override val transactions = eventValueFlow<PagingData<TransactionItem>>()
     override val charities = eventValueFlow<PagingData<CharityItem>>()
+    override val charityBalance = eventValueFlow<Long>()
     override val promoCodes = eventValueFlow<PagingData<PromoCodeItem>>()
     override val getMeData = eventValueFlow<GetMeDto>()
     override val chartFlow = eventValueFlow<List<ChartItem>>()
@@ -95,6 +96,19 @@ class HomeViewModelImpl @Inject constructor(
             }.cachedIn(viewModelScope).launchIn(viewModelScope)
             delay(1000)
             progressFlow.emit(false)
+        }
+    }
+
+    override fun getCharityBalance() {
+        viewModelScope.launch {
+            useCase.getCharityBalance().onEach {
+                it.onSuccess { bal ->
+                    charityBalance.emit(bal)
+                }
+                it.onFailure {
+                    charityBalance.emit(0)
+                }
+            }.launchIn(viewModelScope)
         }
     }
 

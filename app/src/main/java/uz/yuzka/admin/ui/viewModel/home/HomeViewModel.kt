@@ -20,6 +20,7 @@ interface HomeViewModel {
     val status: LiveData<SaleStatus>
     val transactions: Flow<PagingData<TransactionItem>>
     val charities: Flow<PagingData<CharityItem>>
+    val charityBalance: Flow<Long>
     val promoCodes: Flow<PagingData<PromoCodeItem>>
     val getMeData: Flow<GetMeDto>
     val chartFlow: Flow<List<ChartItem>>
@@ -40,6 +41,8 @@ interface HomeViewModel {
     fun getTransactions()
 
     fun getCharities()
+
+    fun getCharityBalance()
 
     fun gotError()
 

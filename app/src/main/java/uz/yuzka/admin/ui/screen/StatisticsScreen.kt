@@ -298,6 +298,7 @@ fun StatisticsScreen(
             if (statistics.loadState.refresh is LoadState.NotLoading && statistics.itemCount == 0 || statistics.loadState.refresh is LoadState.Error) {
                 Box(
                     modifier = Modifier
+                        .padding(top = 45.dp)
                         .fillMaxSize()
                         .verticalScroll(
                             rememberScrollState()
@@ -338,7 +339,10 @@ fun ItemStatistics(data: StatisticsDto) {
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(5.dp),
+            modifier = Modifier.weight(0.6f)
+        ) {
             Text(
                 text = data.name,
                 style = TextStyle(
@@ -364,7 +368,8 @@ fun ItemStatistics(data: StatisticsDto) {
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(5.dp)
+            horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.End),
+            modifier = Modifier.weight(0.4f)
         ) {
 
             Column(

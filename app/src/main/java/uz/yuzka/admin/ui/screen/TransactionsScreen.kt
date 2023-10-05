@@ -552,6 +552,42 @@ fun TransactionsScreen(
 
                         }
 
+
+                        Button(
+                            onClick = {
+                                viewModel.createWithdraw(
+                                    GetMoneyRequest(
+                                        cardNumber,
+                                        sum.toLongOrNull() ?: 0
+                                    )
+                                )
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 0.dp, vertical = 10.dp)
+                                .align(Alignment.CenterHorizontally)
+                                .fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF55BE61),
+                                disabledContainerColor = Color(0xFF8BCC92)
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
+                            enabled = cardNumber.length == 16 && (sum.toIntOrNull()
+                                ?: 0) >= 50000 && (sum.toIntOrNull()
+                                ?: 0) <= (getMeDto?.data?.balance
+                                ?: 49000)
+                        ) {
+                            Text(
+                                text = "Hisobdan pul yechish",
+                                style = TextStyle(
+                                    fontSize = 16.sp,
+                                    fontFamily = FontFamily(Font(R.font.roboto_regular)),
+                                    fontWeight = FontWeight(500),
+                                    color = Color(0xFFFFFFFF),
+                                )
+                            )
+                        }
+
                     }
                 }
 
@@ -618,37 +654,6 @@ fun TransactionsScreen(
                 )
             )
 
-            Button(
-                onClick = {
-                    viewModel.createWithdraw(
-                        GetMoneyRequest(
-                            cardNumber,
-                            sum.toLongOrNull() ?: 0
-                        )
-                    )
-                },
-                modifier = Modifier
-                    .padding(horizontal = 20.dp, vertical = 10.dp)
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF55BE61),
-                    disabledContainerColor = Color(0xFF8BCC92)
-                ),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
-                enabled = cardNumber.length == 16 && (sum.toIntOrNull() ?: 0) > 1000
-            ) {
-                Text(
-                    text = "Hisobdan pul yechish",
-                    style = TextStyle(
-                        fontSize = 16.sp,
-                        fontFamily = FontFamily(Font(R.font.roboto_regular)),
-                        fontWeight = FontWeight(500),
-                        color = Color(0xFFFFFFFF),
-                    )
-                )
-            }
 
         }
     }

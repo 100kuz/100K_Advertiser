@@ -96,10 +96,6 @@ fun CreateStreamScreen(
         mutableStateOf("")
     }
 
-    val discount = remember {
-        mutableStateOf("")
-    }
-
     val product by viewModel.productFlow.observeAsState(initial = null)
 
     val createStreamResult by viewModel.createStreamFlow.collectAsState(initial = null)
@@ -126,13 +122,6 @@ fun CreateStreamScreen(
             if (sheetType is ModalSheetType.SetCharity) {
                 SetCharityBalance(charity) {
                     charity.value = it
-                    scope.launch {
-                        modalState.hide()
-                    }
-                }
-            } else if (sheetType is ModalSheetType.SetDiscount) {
-                SetDiscountBalance(discount) {
-                    discount.value = it
                     scope.launch {
                         modalState.hide()
                     }
@@ -503,57 +492,6 @@ fun CreateStreamScreen(
                                 color = Color(0xFFEDEDED)
                             )
 
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable(interactionSource = remember {
-                                        MutableInteractionSource()
-                                    }, indication = rememberRipple()) {
-                                        sheetType = ModalSheetType.SetDiscount
-                                        scope.launch {
-                                            modalState.show()
-                                        }
-                                    }
-                                    .padding(vertical = 12.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-
-                                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                                    Text(
-                                        text = "${
-                                            discount.value.formatToPrice().ifBlank { "0" }
-                                        } so'm",
-                                        style = TextStyle(
-                                            fontSize = 15.sp,
-                                            lineHeight = 18.sp,
-                                            fontFamily = FontFamily(Font(R.font.roboto_medium)),
-                                            fontWeight = FontWeight(500),
-                                            color = Color(0xFF222222),
-                                        )
-                                    )
-
-                                    Text(
-                                        text = "Chegirma qo‘yilgan",
-                                        style = TextStyle(
-                                            fontSize = 12.sp,
-                                            lineHeight = 14.sp,
-                                            fontFamily = FontFamily(Font(R.font.roboto_regular)),
-                                            fontWeight = FontWeight(400),
-                                            color = Color(0xFF83868B),
-                                        )
-                                    )
-                                }
-
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_arrow_right_icon),
-                                    contentDescription = null,
-                                    tint = Color(0xFF868686)
-                                )
-
-                            }
-
-
                         }
 
                     }
@@ -564,7 +502,6 @@ fun CreateStreamScreen(
                         viewModel.createStream(
                             CreateStreamRequest(
                                 charity = charity.value.toIntOrNull(),
-                                discount = discount.value.toIntOrNull(),
                                 name = name,
                                 product_id = id
                             )

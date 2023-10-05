@@ -88,12 +88,20 @@ fun StreamDetailedScreen(
 
     val data by viewModel.streamFlow.collectAsState(initial = null)
     val progress by viewModel.progressFlow.collectAsState(initial = false)
+    val error by viewModel.errorFlow.collectAsState(initial = null)
     val deleteStreamResult by viewModel.deleteStreamFlow.collectAsState(initial = false)
 
     LaunchedEffect(key1 = deleteStreamResult) {
         if (deleteStreamResult) {
             onBackPress(true)
             viewModel.gotDeleteStream()
+        }
+    }
+
+    LaunchedEffect(key1 = error) {
+        if (error != null) {
+            Toast.makeText(context, "$error", Toast.LENGTH_SHORT).show()
+            viewModel.gotError()
         }
     }
 
@@ -603,55 +611,6 @@ fun StreamDetailedScreen(
                             color = Color(0xFFEDEDED)
                         )
 
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-
-                            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                                Text(
-                                    text = "${
-                                        data?.discount?.toString()?.formatToPrice() ?: 0
-                                    } so'm",
-                                    style = TextStyle(
-                                        fontSize = 15.sp,
-                                        lineHeight = 18.sp,
-                                        fontFamily = FontFamily(Font(R.font.roboto_medium)),
-                                        fontWeight = FontWeight(500),
-                                        color = Color(0xFF222222),
-                                    )
-                                )
-
-                                Text(
-                                    text = "Chegirma qo‘yilgan",
-                                    style = TextStyle(
-                                        fontSize = 12.sp,
-                                        lineHeight = 14.sp,
-                                        fontFamily = FontFamily(Font(R.font.roboto_regular)),
-                                        fontWeight = FontWeight(400),
-                                        color = Color(0xFF83868B),
-                                    )
-                                )
-                            }
-
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_arrow_right_icon),
-                                contentDescription = null,
-                                tint = Color(0xFF868686)
-                            )
-
-                        }
-
-                        Divider(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(0.5.dp),
-                            thickness = 0.5.dp,
-                            color = Color(0xFFEDEDED)
-                        )
 
                     }
                 }

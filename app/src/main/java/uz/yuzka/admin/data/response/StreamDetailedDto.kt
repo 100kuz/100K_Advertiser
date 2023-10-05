@@ -11,7 +11,6 @@ data class StreamDto(
 data class StreamDetailedDto(
     val charity: Int,
     val created_at: String,
-    val discount: Int,
     val id: Int,
     val is_region_disabled: Boolean,
     val link: String?,

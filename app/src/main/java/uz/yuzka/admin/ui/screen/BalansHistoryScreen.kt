@@ -163,7 +163,7 @@ fun BalanceHistoryScreen(
                                 color = Color.Black,
                                 fontFamily = FontFamily(Font(R.font.roboto_medium)),
                                 fontWeight = FontWeight.Medium,
-                                fontSize = 20.sp, modifier = Modifier.align(Alignment.Center)
+                                fontSize = 17.sp, modifier = Modifier.align(Alignment.Center)
                             )
                         }
                     }

@@ -461,6 +461,7 @@ class MainActivity : ComponentActivity() {
                         },
                         charityHistoryContent = {
                             CharityHistoryScreen(
+                                viewModel = homeViewModel,
                                 onBackPress = {
                                     navigationState.navHostController.popBackStack()
                                 }

@@ -61,6 +61,7 @@ import uz.yuzka.admin.ui.screen.tools.CharityInfoLayout
 import uz.yuzka.admin.ui.theme.BackButton
 import uz.yuzka.admin.ui.viewModel.home.HomeViewModel
 import uz.yuzka.admin.ui.viewModel.home.HomeViewModelImpl
+import uz.yuzka.admin.utils.formatToPrice
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
@@ -70,6 +71,7 @@ fun CharityHistoryScreen(
 ) {
 
     val charities = viewModel.charities.collectAsLazyPagingItems()
+    val charityBalance by viewModel.charityBalance.collectAsState(0)
 
     val hasLoaded by viewModel.hasLoadedCharities.observeAsState(false)
 
@@ -80,13 +82,17 @@ fun CharityHistoryScreen(
     LaunchedEffect(key1 = null) {
         if (!hasLoaded) {
             viewModel.getCharities()
+            viewModel.getCharityBalance()
         }
     }
 
     val pullRefreshState =
         rememberPullRefreshState(
             refreshing = progress,
-            onRefresh = { charities.refresh() })
+            onRefresh = {
+                charities.refresh()
+                viewModel.getCharityBalance()
+            })
 
     val modalState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -170,8 +176,9 @@ fun CharityHistoryScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+
                                 Text(
-                                    text = "780,345,000 uzs",
+                                    text = "${charityBalance.toString().formatToPrice()} uzs",
                                     style = TextStyle(
                                         fontSize = 32.sp,
                                         lineHeight = 38.sp,
@@ -191,7 +198,6 @@ fun CharityHistoryScreen(
                                         contentDescription = null,
                                         tint = Color.Unspecified
                                     )
-
                                 }
                             }
                         }

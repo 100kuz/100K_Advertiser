@@ -18,6 +18,7 @@ import uz.yuzka.admin.base.BaseErrorResponse
 import uz.yuzka.admin.base.SaleStatus
 import uz.yuzka.admin.data.request.CreateStreamRequest
 import uz.yuzka.admin.data.request.GetMoneyRequest
+import uz.yuzka.admin.data.request.LogoutRequest
 import uz.yuzka.admin.data.request.SetDeviceTokenRequest
 import uz.yuzka.admin.data.response.BalanceResponse
 import uz.yuzka.admin.data.response.CategoryDto
@@ -51,7 +52,6 @@ import uz.yuzka.admin.datasource.TransactionsDataSource
 import uz.yuzka.admin.datasource.WithdrawsDataSource
 import uz.yuzka.admin.network.MainApi
 import uz.yuzka.admin.pref.MyPref
-import uz.yuzka.admin.data.request.LogoutRequest
 import java.io.File
 import javax.inject.Inject
 
@@ -494,7 +494,8 @@ class MainRepositoryImpl @Inject constructor(
             )
         }
 
-        val response = api.updateUser(name1, surname1, regionId1, districtId1, address1, gender, avatarBody)
+        val response =
+            api.updateUser(name1, surname1, regionId1, districtId1, address1, gender, avatarBody)
 
         if (response.isSuccessful) {
             pref.getMeDto = response.body()
@@ -561,7 +562,6 @@ class MainRepositoryImpl @Inject constructor(
 
     override fun generatePost(id: Int): Flow<Result<MessageResponse>> = flow {
         val response = api.generatePost(id)
-
         if (response.isSuccessful) {
             emit(Result.success(response.body()!!))
         } else {
@@ -580,5 +580,24 @@ class MainRepositoryImpl @Inject constructor(
         emit(Result.failure(errorMessage))
     }.flowOn(Dispatchers.IO)
 
+    override fun getCharityBalance(): Flow<Result<Long>> = flow {
+        val response = api.getCharityBalance()
+        if (response.isSuccessful) {
+            emit(Result.success(response.body()!!.balance))
+        } else {
+            val errorData: BaseErrorResponse? = try {
+                Gson().fromJson<BaseErrorResponse?>(
+                    response.errorBody()?.string(),
+                    object : TypeToken<BaseErrorResponse>() {}.type
+                )
+            } catch (e: Exception) {
+                null
+            }
+            emit(Result.failure(Throwable(errorData?.message)))
+        }
+    }.catch {
+        val errorMessage = Throwable(it.message)
+        emit(Result.failure(errorMessage))
+    }.flowOn(Dispatchers.IO)
 
 }

@@ -6,9 +6,11 @@ import retrofit2.Response
 import retrofit2.http.*
 import uz.yuzka.admin.data.request.CreateStreamRequest
 import uz.yuzka.admin.data.request.GetMoneyRequest
+import uz.yuzka.admin.data.request.LogoutRequest
 import uz.yuzka.admin.data.request.SetDeviceTokenRequest
 import uz.yuzka.admin.data.response.CategoriesResponse
 import uz.yuzka.admin.data.response.CharitiesResponse
+import uz.yuzka.admin.data.response.CharityBalance
 import uz.yuzka.admin.data.response.ChartResponse
 import uz.yuzka.admin.data.response.CreatePromoCodeRequest
 import uz.yuzka.admin.data.response.GetMeDto
@@ -26,7 +28,6 @@ import uz.yuzka.admin.data.response.StreamsResponse
 import uz.yuzka.admin.data.response.TransactionsResponse
 import uz.yuzka.admin.data.response.WithdrawItemData
 import uz.yuzka.admin.data.response.WithdrawsResponse
-import uz.yuzka.admin.data.request.LogoutRequest
 
 interface MainApi {
 
@@ -154,9 +155,12 @@ interface MainApi {
     suspend fun getTransactionStatistics(
     ): ChartResponse
 
-    @GET("advertiser/products/{id}/generate-tg-post")
+    @POST("advertiser/products/{id}/generate-tg-post")
     suspend fun generatePost(
         @Path("id") id: Int
     ): Response<MessageResponse>
+
+    @GET("advertiser/streams/charity")
+    suspend fun getCharityBalance(): Response<CharityBalance>
 
 }

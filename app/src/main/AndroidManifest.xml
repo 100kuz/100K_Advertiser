@@ -36,7 +36,8 @@
             android:name=".ui.activity.MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.100KAdmin" />
+            android:theme="@style/Theme.100KAdmin"
+            android:windowSoftInputMode="stateAlwaysVisible|adjustResize" />
 
         <activity
             android:name=".ui.activity.AuthActivity"

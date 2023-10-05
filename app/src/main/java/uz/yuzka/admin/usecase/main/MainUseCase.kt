@@ -95,4 +95,6 @@ interface MainUseCase {
     fun getTransactionStats(): Flow<Result<List<ChartItem>>>
 
     fun generatePost(id: Int): Flow<Result<MessageResponse>>
+
+    fun getCharityBalance(): Flow<Result<Long>>
 }

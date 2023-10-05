@@ -116,7 +116,8 @@ class MainUseCaseImpl @Inject constructor(
         districtId: Int,
         address: String,
         avatar: File?
-    ): Flow<Result<GetMeDto>> = repository.updateUser(name, surname, regionId, districtId, address,avatar)
+    ): Flow<Result<GetMeDto>> =
+        repository.updateUser(name, surname, regionId, districtId, address, avatar)
 
     override fun deleteStream(id: Int): Flow<Result<MessageResponse>> = repository.deleteStream(id)
 
@@ -124,4 +125,6 @@ class MainUseCaseImpl @Inject constructor(
         repository.getTransactionStats()
 
     override fun generatePost(id: Int): Flow<Result<MessageResponse>> = repository.generatePost(id)
+
+    override fun getCharityBalance(): Flow<Result<Long>> = repository.getCharityBalance()
 }

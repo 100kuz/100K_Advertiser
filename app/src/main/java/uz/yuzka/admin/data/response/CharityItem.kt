@@ -19,3 +19,7 @@ data class CharityItem(
     val user_id: Int,
     val visits: Int
 )
+
+data class CharityBalance(
+    val balance: Long
+)

@@ -98,4 +98,6 @@ interface MainRepository {
 
     fun generatePost(id: Int): Flow<Result<MessageResponse>>
 
+    fun getCharityBalance(): Flow<Result<Long>>
+
 }

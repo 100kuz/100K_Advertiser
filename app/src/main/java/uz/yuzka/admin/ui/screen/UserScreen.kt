@@ -57,7 +57,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -73,6 +72,7 @@ import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
+import uz.yuzka.admin.BuildConfig
 import uz.yuzka.admin.R
 import uz.yuzka.admin.ui.screen.tools.DistrictModalLayout
 import uz.yuzka.admin.ui.screen.tools.GetContentDialog
@@ -823,6 +823,17 @@ fun UserScreen(
                         )
                     }
 
+                    Text(
+                        text = "Version: ${BuildConfig.VERSION_NAME}",
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(
+                                top = 10.dp
+                            ),
+                        fontSize = 12.sp,
+                        color = Color(0xFF9C9C9C)
+                    )
+
                 }
 
                 Button(
@@ -838,8 +849,9 @@ fun UserScreen(
                     },
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
+                        .padding(horizontal = 20.dp, vertical = 10.dp)
                         .fillMaxWidth(),
-                    shape = RectangleShape,
+                    shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(Color(0xFF51AEE7)),
                     enabled = !progress
                 ) {
