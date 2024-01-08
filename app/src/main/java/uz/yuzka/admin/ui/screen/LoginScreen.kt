@@ -146,7 +146,15 @@ fun LoginScreen(onVerifyClick: (String) -> Unit, onLoginClick: () -> Unit) {
                     fontSize = 13.sp,
                     fontFamily = FontFamily(Font(R.font.roboto_regular)),
                     fontWeight = FontWeight(400),
-                    color = if (checked) Color.Black else Color(0xFF868686)
+                    color = if (checked) Color.Black else Color(0xFF868686),
+                    modifier = Modifier.clickable(
+                        interactionSource = remember {
+                            MutableInteractionSource()
+                        },
+                        indication = rememberRipple()
+                    ) {
+                        //todo
+                    }
                 )
 
             }

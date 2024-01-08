@@ -1,6 +1,8 @@
 package uz.yuzka.admin.ui.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -203,7 +206,15 @@ fun UsernameLoginScreen(onBackPress: () -> Unit, onVerifyClick: (String, String)
                         fontSize = 13.sp,
                         fontFamily = FontFamily(Font(R.font.roboto_regular)),
                         fontWeight = FontWeight(400),
-                        color = if (checked) Color.Black else Color(0xFF868686)
+                        color = if (checked) Color.Black else Color(0xFF868686),
+                        modifier = Modifier.clickable(
+                            interactionSource = remember {
+                                MutableInteractionSource()
+                            },
+                            indication = rememberRipple()
+                        ) {
+                            //todo
+                        }
                     )
 
                 }
